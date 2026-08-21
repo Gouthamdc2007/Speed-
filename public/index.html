@@ -1763,7 +1763,7 @@ table.data-table tr:hover td {
           <g id="dialTicksGroup"></g>
 
           <!-- Cyber Laser Needle Assembly -->
-          <g id="needleAssembly" transform="rotate(-135 180 180)">
+          <g id="needleAssembly" style="transform: rotate(-135deg); transform-origin: 180px 180px;">
             <!-- Needle Glow Blade -->
             <polygon points="176.5,180 183.5,180 181,58 179,58" fill="url(#needleGradient)" filter="url(#glowFilter)" />
             <!-- Needle Sharp White Tip -->
@@ -2417,7 +2417,7 @@ function updateSpeedGauge(speed, peak, phaseLabel, unit) {
   // 2. Update Cyber Laser Needle (Sweeps from -135deg to +135deg, strictly bounded)
   const needleAngle = -135 + (p * 270);
   if (needleAssembly) {
-    needleAssembly.setAttribute('transform', `rotate(${needleAngle} 180 180)`);
+    needleAssembly.style.transform = `rotate(${needleAngle}deg)`;
   }
 
   // 3. Update 36 Segmented LED Arc Ticks
@@ -2463,7 +2463,7 @@ function updateSpeedGauge(speed, peak, phaseLabel, unit) {
 
 function resetSpeedGauge() {
   gaugeProgressArc.style.strokeDashoffset = GAUGE_DASH_TOTAL;
-  if (needleAssembly) needleAssembly.setAttribute('transform', 'rotate(-135 180 180)');
+  if (needleAssembly) needleAssembly.style.transform = 'rotate(-135deg)';
   segmentElements.forEach(seg => {
     seg.setAttribute('stroke', 'rgba(255, 255, 255, 0.08)');
     seg.style.filter = 'none';
