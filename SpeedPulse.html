@@ -2095,8 +2095,8 @@ table.data-table tr:hover td {
 
         <div class="form-field">
           <label>Firebase Project ID</label>
-          <input type="text" id="fbProjectIdMain" class="input-control" placeholder="e.g. speedplus-app-1234" value="speedplus-cloud" />
-          <small>Find your Project ID in console.firebase.google.com Project Settings</small>
+          <input type="text" id="fbProjectIdMain" class="input-control" placeholder="e.g. speedplus-23ef3" value="speedplus-23ef3" />
+          <small>Project ID linked: speedplus-23ef3 (console.firebase.google.com)</small>
         </div>
 
         <div class="form-field">
@@ -3666,7 +3666,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   window.firebaseCloudEnabled = localStorage.getItem('speedplus_firebase_enabled') !== 'false';
 
   window.initFirebaseCloud = function() {
-    const userProjectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud').trim();
+    const userProjectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-23ef3').trim();
     const userApiKey = (localStorage.getItem('speedplus_firebase_apikey') || '').trim();
     window.firebaseCloudEnabled = localStorage.getItem('speedplus_firebase_enabled') !== 'false';
     
@@ -3693,7 +3693,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   window.saveAuditToFirebaseCloud = async function(record) {
     if (!window.firebaseCloudEnabled) return;
     
-    const projectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud').trim();
+    const projectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-23ef3').trim();
     const apiKey = (localStorage.getItem('speedplus_firebase_apikey') || '').trim();
 
     // 1. Try Firestore Web SDK
