@@ -3064,6 +3064,24 @@ async function requestExactGpsLocation(isAuto = false, onSuccess = null) {
           btnGpsLoc.classList.add('verified');
           gpsBtnTxt.textContent = 'GPS Verified';
           localStorage.setItem('speedpulse_gps_location', fullAddress);
+
+          // Save User Address into dedicated Firebase 'user_addresses' Collection
+          if (typeof window.saveUserAddressToFirebaseCloud === 'function') {
+            window.saveUserAddressToFirebaseCloud({
+              fullAddress,
+              locality,
+              city,
+              state,
+              postcode,
+              country,
+              latitude: lat,
+              longitude: lon,
+              accuracyMeters: accuracy,
+              networkOperator: detectedCarrierDetails.fullName || detectedCarrierDetails.isp || 'Broadband',
+              ipAddress: detectedCarrierDetails.ip || ''
+            });
+          }
+
           displayToast(`GPS Location Pinpointed: ${city || locality}, ${state}`);
           if (typeof onSuccess === 'function') onSuccess();
           return;
@@ -3087,6 +3105,22 @@ async function requestExactGpsLocation(isAuto = false, onSuccess = null) {
           btnGpsLoc.classList.add('verified');
           gpsBtnTxt.textContent = 'GPS Verified';
           localStorage.setItem('speedpulse_gps_location', fullAddress);
+
+          // Save User Address into dedicated Firebase 'user_addresses' Collection
+          if (typeof window.saveUserAddressToFirebaseCloud === 'function') {
+            window.saveUserAddressToFirebaseCloud({
+              fullAddress,
+              city,
+              state,
+              country,
+              latitude: lat,
+              longitude: lon,
+              accuracyMeters: accuracy,
+              networkOperator: detectedCarrierDetails.fullName || detectedCarrierDetails.isp || 'Broadband',
+              ipAddress: detectedCarrierDetails.ip || ''
+            });
+          }
+
           displayToast(`GPS Location Pinpointed: ${city}, ${state}`);
           if (typeof onSuccess === 'function') onSuccess();
           return;
@@ -3788,6 +3822,63 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
         }
       } catch (err) {
         console.warn("Firebase REST endpoint fallback failed:", err);
+      }
+    }
+  };
+
+  window.saveUserAddressToFirebaseCloud = async function(addressData) {
+    if (!window.firebaseCloudEnabled) return;
+    
+    const projectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-23ef3').trim();
+    const apiKey = (localStorage.getItem('speedplus_firebase_apikey') || '').trim();
+
+    // 1. Try Firestore Web SDK
+    if (db) {
+      try {
+        const docRef = await addDoc(collection(db, "user_addresses"), {
+          ...addressData,
+          createdAt: serverTimestamp(),
+          clientAgent: 'Speed+ Location Logger'
+        });
+        console.log("📍 User Address Saved to Firestore 'user_addresses' collection. Doc ID:", docRef.id);
+        return;
+      } catch (e) {
+        console.warn("user_addresses Web SDK save warning, attempting REST API fallback...", e);
+      }
+    }
+
+    // 2. Direct REST API Fallback to user_addresses collection
+    if (projectId) {
+      try {
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/user_addresses${apiKey ? '?key=' + apiKey : ''}`;
+        const body = {
+          fields: {
+            fullAddress: { stringValue: addressData.fullAddress || '' },
+            locality: { stringValue: addressData.locality || '' },
+            city: { stringValue: addressData.city || '' },
+            state: { stringValue: addressData.state || '' },
+            postcode: { stringValue: addressData.postcode || '' },
+            country: { stringValue: addressData.country || 'India' },
+            latitude: { doubleValue: addressData.latitude || 0 },
+            longitude: { doubleValue: addressData.longitude || 0 },
+            accuracyMeters: { integerValue: addressData.accuracyMeters || 10 },
+            networkOperator: { stringValue: addressData.networkOperator || 'Broadband' },
+            ipAddress: { stringValue: addressData.ipAddress || '' },
+            timestamp: { integerValue: Date.now() }
+          }
+        };
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          console.log("📍 User Address Saved to Firestore 'user_addresses' via REST API!");
+        }
+      } catch (err) {
+        console.warn("user_addresses REST API fallback failed:", err);
       }
     }
   };
