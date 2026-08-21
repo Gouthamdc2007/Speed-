@@ -1,0 +1,3539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed+ — Ultra Precision Network Speed Test & Operator Audit</title>
+  <meta name="description" content="Speed+ — Ultimate precision network speed test with L2/L3 physical wire-rate compensation, loaded latency bufferbloat analysis, and ISP accuracy benchmarking." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300f0ff'/%3E%3Cstop offset='100%25' stop-color='%233b82f6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='15' fill='%2306090e' stroke='%2300f0ff' stroke-width='2'/%3E%3Cpath d='M8 9 L18 16 L8 23 L13 23 L23 16 L13 9 Z' fill='url(%23g)'/%3E%3Cpath d='M23 7 L27 7 M25 5 L25 9' stroke='%2300f0ff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  
+  <!-- Typography: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<style>
+/* ==========================================================================
+   DESIGN SYSTEM & ENTERPRISE DARK THEME (Linear / Ookla / Cloudflare Pro)
+   ========================================================================== */
+:root {
+  --bg-base: #06090e;
+  --bg-surface: #0b1019;
+  --bg-surface-elevated: #101726;
+  --bg-card: rgba(12, 17, 28, 0.85);
+  --bg-card-hover: rgba(18, 25, 42, 0.92);
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-medium: rgba(255, 255, 255, 0.13);
+  --border-active: rgba(0, 240, 255, 0.45);
+
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+
+  --accent-cyan: #00f0ff;
+  --accent-blue: #3b82f6;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+  --accent-purple: #8b5cf6;
+  --accent-amber: #f59e0b;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
+  --shadow-main: 0 12px 36px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-glow-cyan: 0 0 35px rgba(0, 240, 255, 0.28);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  background-image: 
+    radial-gradient(at 15% 10%, rgba(0, 240, 255, 0.09) 0px, transparent 50%),
+    radial-gradient(at 85% 90%, rgba(139, 92, 246, 0.09) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+}
+
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 1020px;
+  padding: 22px 20px 60px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ==========================================================================
+   NAVIGATION
+   ========================================================================== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  box-shadow: var(--shadow-main);
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-logo-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(14, 25, 48, 0.95), rgba(2, 6, 23, 0.95));
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3), inset 0 0 12px rgba(0, 240, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-logo-badge::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.25) 0%, transparent 70%);
+  animation: logoPulse 3s infinite ease-in-out;
+}
+
+@keyframes logoPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.speed-plus-svg-logo {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.7));
+}
+
+.brand-text h1 {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.plus-symbol-glow {
+  color: var(--accent-cyan);
+  font-size: 24px;
+  font-weight: 900;
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.85);
+  display: inline-block;
+  margin-left: 1px;
+}
+
+.badge-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-nav-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-nav-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   WIRE-RATE 100% ACCURACY MODE SWITCHER BAR
+   ========================================================================== */
+.accuracy-mode-bar {
+  background: linear-gradient(135deg, rgba(14, 24, 45, 0.9), rgba(18, 30, 58, 0.9));
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  box-shadow: 0 4px 18px rgba(0, 240, 255, 0.08);
+}
+
+.accuracy-mode-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.accuracy-mode-info i {
+  color: var(--accent-cyan);
+}
+
+.mode-toggle-group {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 2px;
+}
+
+.mode-pill {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.mode-pill.active {
+  background: linear-gradient(135deg, #00f0ff, #3b82f6);
+  color: #021124;
+  box-shadow: 0 2px 8px rgba(0, 240, 255, 0.35);
+}
+
+/* ==========================================================================
+   NETWORK OPERATOR HERO CARD (JIO / AIRTEL / BSNL / ACT / TIC / Vi)
+   ========================================================================== */
+.operator-card {
+  background: linear-gradient(135deg, rgba(14, 21, 38, 0.95) 0%, rgba(18, 27, 49, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-main);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.operator-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00f0ff, #3b82f6, #8b5cf6, #10b981);
+}
+
+.operator-top-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.operator-info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.operator-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald);
+  animation: pulseLive 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseLive {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+.asn-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.operator-brand-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.operator-logo-badge {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #00f0ff, #3b82f6);
+  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.operator-title {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.operator-title span {
+  color: var(--accent-cyan);
+}
+
+.operator-fullname {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.operator-fullname strong {
+  color: var(--text-secondary);
+}
+
+.operator-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.operator-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.operator-meta-item i {
+  color: var(--accent-cyan);
+  font-size: 12px;
+}
+
+.btn-gps-pill {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 14px;
+  color: var(--accent-cyan);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-gps-pill:hover {
+  background: rgba(0, 240, 255, 0.22);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-gps-pill.verified {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--accent-emerald);
+}
+
+/* Plan Matcher Controls */
+.plan-matcher-panel {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan-matcher-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plan-inputs-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-plan, .input-plan-custom {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 10px;
+  outline: none;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.select-plan:focus, .input-plan-custom:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+/* Quick Operator Selector Chips */
+.quick-carrier-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.chips-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.carrier-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carrier-chip:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+  transform: translateY(-1px);
+}
+
+.carrier-chip.active {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+}
+
+/* ==========================================================================
+   STATUS & TEST PROGRESS BAR
+   ========================================================================== */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 15px;
+  border-radius: 30px;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.status-badge.ready .state-dot   { background: var(--accent-emerald); box-shadow: 0 0 10px var(--accent-emerald); }
+.status-badge.testing .state-dot { background: var(--accent-cyan); box-shadow: 0 0 12px var(--accent-cyan); animation: pulseLive 1.2s infinite; }
+.status-badge.done .state-dot    { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
+.status-badge.error .state-dot   { background: var(--accent-rose); box-shadow: 0 0 10px var(--accent-rose); }
+
+.phase-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  padding: 5px 14px;
+  border-radius: 30px;
+  border: 1px solid var(--border-subtle);
+}
+
+.phase-node {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.phase-node.active {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
+.phase-node.done {
+  color: var(--accent-emerald);
+}
+
+.phase-divider {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.3;
+}
+
+/* ==========================================================================
+   SPEEDOMETER HERO DISPLAY
+   ========================================================================== */
+/* ==========================================================================
+   SPEEDOMETER GAUGE TYPE SWITCHER & MULTI-STYLE VISUALIZER
+   ========================================================================== */
+.gauge-type-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.switcher-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.gauge-type-pills {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.gauge-style-btn {
+  background: transparent;
+  border: none;
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gauge-style-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gauge-style-btn.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(59, 130, 246, 0.25) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
+}
+
+.speedometer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 6px 0;
+  gap: 14px;
+}
+
+.gauge-canvas-wrapper {
+  width: 320px;
+  height: 320px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+svg.gauge-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.outer-glow-ring {
+  fill: none;
+  stroke: rgba(0, 240, 255, 0.08);
+  stroke-width: 2;
+  stroke-dasharray: 4, 8;
+  animation: spinSlow 30s linear infinite;
+  transform-origin: 180px 180px;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.track-arc {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-dasharray: 660;
+  stroke-dashoffset: 220;
+  transform: rotate(135deg);
+  transform-origin: 180px 180px;
+}
+
+#gaugeProgressArc {
+  fill: none;
+  stroke: url(#cyanGradient);
+  stroke-width: 18;
+  stroke-linecap: round;
+  stroke-dasharray: 660;
+  stroke-dashoffset: 660;
+  filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.55));
+  transform: rotate(135deg);
+  transform-origin: 180px 180px;
+  transition: stroke-dashoffset 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), stroke 0.4s ease;
+}
+
+/* Quantum Orbital Rings */
+.quantum-orbital-ring {
+  fill: none;
+  stroke-linecap: round;
+  display: none;
+  transform-origin: 180px 180px;
+}
+
+.speedometer-container[data-meter-style="quantum"] .quantum-orbital-ring {
+  display: block;
+}
+
+.quantum-orbital-ring.r1 {
+  stroke: rgba(0, 240, 255, 0.45);
+  stroke-width: 3;
+  stroke-dasharray: 30, 25, 60, 25;
+  animation: spinQuantum1 6s linear infinite;
+  filter: drop-shadow(0 0 8px #00f0ff);
+}
+
+.quantum-orbital-ring.r2 {
+  stroke: rgba(139, 92, 246, 0.5);
+  stroke-width: 2.5;
+  stroke-dasharray: 20, 20, 40, 20;
+  animation: spinQuantum2 8s linear infinite reverse;
+  filter: drop-shadow(0 0 8px #8b5cf6);
+}
+
+@keyframes spinQuantum1 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinQuantum2 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* Cyber Needle */
+#needleAssembly {
+  transform-origin: 180px 180px;
+  transition: transform 0.14s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.8));
+}
+
+.speedometer-container[data-meter-style="matrix"] #cockpitSvg {
+  display: none;
+}
+
+/* Matrix VU Tower Mode */
+.matrix-vu-container {
+  display: none;
+  width: 260px;
+  height: 200px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  gap: 20px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.speedometer-container[data-meter-style="matrix"] .matrix-vu-container {
+  display: flex;
+}
+
+.vu-channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.vu-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.vu-led-tower {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 3px;
+  width: 100%;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vu-segment {
+  height: 4px;
+  width: 100%;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.08s, box-shadow 0.08s;
+}
+
+.vu-segment.lit-cyan {
+  background: #00f0ff;
+  box-shadow: 0 0 6px #00f0ff;
+}
+
+.vu-segment.lit-blue {
+  background: #3b82f6;
+  box-shadow: 0 0 6px #3b82f6;
+}
+
+.vu-segment.lit-purple {
+  background: #a855f7;
+  box-shadow: 0 0 8px #a855f7;
+}
+
+.vu-segment.lit-rose {
+  background: #f43f5e;
+  box-shadow: 0 0 10px #f43f5e;
+}
+
+.gauge-center-stats {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+  z-index: 10;
+}
+
+.test-phase-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.live-speed-number {
+  font-family: var(--font-mono);
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2.5px;
+  background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 35px rgba(0, 240, 255, 0.2);
+}
+
+.live-speed-unit {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 1px;
+}
+
+.peak-pill {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.peak-pill strong {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.btn-start-master {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%);
+  border: none;
+  color: #021124;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.4), inset 0 2px 6px rgba(255, 255, 255, 0.6);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-start-master:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.65), inset 0 2px 8px rgba(255, 255, 255, 0.8);
+}
+
+.btn-start-master:active {
+  transform: scale(0.95);
+}
+
+.btn-start-master.running {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  box-shadow: 0 0 35px rgba(244, 63, 94, 0.45);
+  color: #ffffff;
+  font-size: 16px;
+}
+
+/* ==========================================================================
+   LIVE BANDWIDTH OSCILLOSCOPE WAVEFORM
+   ========================================================================== */
+.oscilloscope-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-main);
+}
+
+.oscilloscope-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.oscilloscope-header i {
+  color: var(--accent-cyan);
+  margin-right: 6px;
+}
+
+.oscilloscope-stat {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+canvas#waveformCanvas {
+  width: 100%;
+  height: 75px;
+  display: block;
+}
+
+/* ==========================================================================
+   PRIMARY METRICS GRID (INCLUDES LOADED LATENCY & BUFFERBLOAT)
+   ========================================================================== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.metric-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: var(--shadow-main);
+  transition: all 0.25s ease;
+}
+
+.metric-panel:hover {
+  border-color: var(--border-medium);
+  transform: translateY(-2px);
+}
+
+.metric-panel.highlight-active {
+  border-color: var(--border-active);
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+.panel-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.icon-ping-theme { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.icon-down-theme { background: rgba(0, 240, 255, 0.12); color: #00f0ff; }
+.icon-up-theme   { background: rgba(244, 63, 94, 0.12); color: #f43f5e; }
+.icon-qual-theme { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+
+.panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.panel-data-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.panel-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.panel-unit {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.panel-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.panel-subtext strong {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   OPERATOR ACCURACY & BUFFERBLOAT AUDIT CARD
+   ========================================================================== */
+.accuracy-audit-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-main);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.audit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+.audit-header h3 {
+  font-size: 15.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.audit-header h3 i {
+  color: var(--accent-cyan);
+}
+
+.audit-carrier-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--accent-cyan);
+}
+
+.audit-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.audit-stat-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.audit-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.audit-score-number-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.audit-score-val {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-cyan);
+}
+
+.bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill-indicator {
+  height: 100%;
+  background: linear-gradient(90deg, #00f0ff, #10b981);
+  width: 0%;
+  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.audit-verdict-banner {
+  background: rgba(0, 240, 255, 0.04);
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.audit-verdict-banner strong {
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   TELEMETRY FOOTER BAR
+   ========================================================================== */
+.telemetry-footer-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+}
+
+.tele-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tele-block i {
+  color: var(--accent-cyan);
+  font-size: 17px;
+  opacity: 0.85;
+}
+
+.tele-tag {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.tele-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   MODALS
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  background: #0d1322;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 650px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-head h2 {
+  font-size: 17px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-head h2 i {
+  color: var(--accent-cyan);
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  color: var(--text-primary);
+}
+
+.modal-content-body {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Form Styles */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-field small {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+select.input-control, input.input-control {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  font-family: var(--font-sans);
+  transition: border-color 0.2s ease;
+}
+
+select.input-control:focus, input.input-control:focus {
+  border-color: var(--accent-cyan);
+}
+
+.btn-primary-action {
+  background: linear-gradient(135deg, #00f0ff, #3b82f6);
+  border: none;
+  color: #021124;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-action:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-sec-action {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-sec-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.btn-sec-action.danger:hover {
+  background: rgba(244, 63, 94, 0.18);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: var(--accent-rose);
+}
+
+/* Tables */
+.table-scroll-wrap {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+table.data-table th {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 11px 14px;
+  color: var(--text-muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+table.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+table.data-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary);
+}
+
+.rank-badge-circle {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 11px;
+}
+
+.rank-1 { background: #fbbf24; color: #1e1b4b; }
+.rank-2 { background: #cbd5e1; color: #1e1b4b; }
+.rank-3 { background: #f97316; color: #1e1b4b; }
+.rank-oth { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+
+/* Share Card */
+.share-certificate {
+  background: linear-gradient(135deg, #0d1527, #18223c);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+}
+
+.cert-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.cert-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cert-stat-item .c-label {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.cert-stat-item .c-val {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cert-stat-item .c-unit {
+  font-size: 12px;
+  color: var(--accent-cyan);
+}
+
+.cert-sub-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+/* Toast */
+.toast-popup {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--accent-emerald);
+  color: #021124;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 24px;
+  border-radius: 30px;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 999;
+}
+
+.toast-popup.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .operator-top-row { grid-template-columns: 1fr; }
+  .gauge-canvas-wrapper { width: 270px; height: 270px; }
+  .live-speed-number { font-size: 48px; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .telemetry-footer-bar { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+
+  <div class="app-container">
+    <!-- Navbar Header -->
+    <nav class="navbar">
+      <div class="brand-group">
+        <div class="brand-logo-badge" title="Speed+ High-Precision Engine">
+          <svg class="speed-plus-svg-logo" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff" />
+                <stop offset="60%" stop-color="#3b82f6" />
+                <stop offset="100%" stop-color="#8b5cf6" />
+              </linearGradient>
+              <linearGradient id="plusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#00f0ff" />
+              </linearGradient>
+            </defs>
+            <!-- Aerodynamic Speed Chevrons -->
+            <path d="M5 9 L17 19 L5 29 L10 29 L22 19 L10 9 Z" fill="url(#logoGrad)" opacity="0.5"/>
+            <path d="M13 9 L25 19 L13 29 L18 29 L30 19 L18 9 Z" fill="url(#logoGrad)"/>
+            <!-- Neon Glowing Plus Symbol -->
+            <path d="M26 8 L32 8 M29 5 L29 11" stroke="url(#plusGrad)" stroke-width="2.6" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Speed<span class="plus-symbol-glow">+</span></h1>
+          <span class="badge-tag">ULTRA-PRECISION AUDIT</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <button class="btn-nav-icon" id="btnLeaderboard" title="Network Operator Leaderboard">
+          <i class="fa-solid fa-trophy"></i>
+        </button>
+        <button class="btn-nav-icon" id="btnHistory" title="Speed Test History">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </button>
+        <button class="btn-nav-icon" id="btnSettings" title="Engine Settings">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+        <button class="btn-nav-icon" id="btnShare" title="Share Verified Result" style="display:none;">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- 100% ACCURACY WIRE-RATE VS APPLICATION PAYLOAD TOGGLE -->
+    <div class="accuracy-mode-bar">
+      <div class="accuracy-mode-info">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Measurement Standard:</span>
+      </div>
+      <div class="mode-toggle-group">
+        <button class="mode-pill active" id="modeWire" title="Compensates for TCP/IP/Ethernet framing headers (+3.8%) to display true physical line rate advertised by ISPs">
+          ⚡ Physical Wire-Rate (ISP Match)
+        </button>
+        <button class="mode-pill" id="modePayload" title="Raw uncompensated application transfer throughput">
+          Raw Payload Rate
+        </button>
+      </div>
+    </div>
+
+    <!-- PROMINENT USER NETWORK OPERATOR & ISP HERO CARD -->
+    <section class="operator-card" id="heroOperatorCard">
+      <div class="operator-top-row">
+        <div class="operator-info-group">
+          <div class="operator-badge-row">
+            <span class="live-indicator">
+              <span class="live-dot"></span> Active Network Carrier
+            </span>
+            <span class="asn-tag" id="heroAsn">ASN: Detecting...</span>
+          </div>
+
+          <div class="operator-brand-display">
+            <div class="operator-logo-badge" id="heroBrandBadge">BSNL</div>
+            <div>
+              <h2 class="operator-title" id="heroIspTitle">Bharat Sanchar Nigam Limited <span>(BSNL Bharat Fibre)</span></h2>
+              <div class="operator-fullname" id="heroIspFullname">Official Full Form: <strong>Bharat Sanchar Nigam Limited</strong></div>
+            </div>
+          </div>
+          
+          <div class="operator-meta">
+            <div class="operator-meta-item">
+              <i class="fa-solid fa-network-wired"></i>
+              <span id="heroIpAddress">IP: Detecting...</span>
+            </div>
+            <div class="operator-meta-item">
+              <i class="fa-solid fa-location-dot"></i>
+              <span id="heroLocation">Location: Auto-Detecting...</span>
+              <button id="btnGpsLoc" class="btn-gps-pill" title="Turn on GPS location for 100% accurate city and district address">
+                <i class="fa-solid fa-crosshairs"></i> <span id="gpsBtnTxt">Enable Exact GPS</span>
+              </button>
+            </div>
+            <div class="operator-meta-item">
+              <i class="fa-solid fa-tower-broadcast"></i>
+              <span id="heroTech">BSNL Optical Fibre (FTTH) / 4G</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan Speed Matcher -->
+        <div class="plan-matcher-panel">
+          <div class="plan-matcher-label">
+            <span>Advertised Plan Speed</span>
+            <i class="fa-solid fa-circle-question" title="Select your plan speed to test if your operator delivers 100% promised bandwidth"></i>
+          </div>
+          <div class="plan-inputs-group">
+            <select id="selectPlanSpeed" class="select-plan">
+              <option value="30">30 Mbps Plan</option>
+              <option value="50">50 Mbps Plan</option>
+              <option value="100" selected>100 Mbps Plan</option>
+              <option value="150">150 Mbps Plan</option>
+              <option value="200">200 Mbps Plan</option>
+              <option value="300">300 Mbps Plan</option>
+              <option value="500">500 Mbps Plan</option>
+              <option value="1000">1 Gbps (1000 Mbps) Plan</option>
+              <option value="custom">Custom Mbps...</option>
+            </select>
+            <input type="number" id="inputCustomPlan" class="input-plan-custom" placeholder="Mbps" style="display:none; width: 90px;" min="1" max="10000" value="100" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick 1-Click Network Operator Selector Chips -->
+      <div class="quick-carrier-chips">
+        <span class="chips-label"><i class="fa-solid fa-sliders"></i> Switch Operator:</span>
+        <button class="carrier-chip active" data-op="bsnl">🟡 BSNL</button>
+        <button class="carrier-chip" data-op="jio">🔵 JIO</button>
+        <button class="carrier-chip" data-op="airtel">🔴 AIRTEL</button>
+        <button class="carrier-chip" data-op="tic">🟣 TIC FIBRE</button>
+        <button class="carrier-chip" data-op="act">🟢 ACT</button>
+        <button class="carrier-chip" data-op="tata">🔵 TATA PLAY</button>
+        <button class="carrier-chip" data-op="vi">🟠 Vi</button>
+        <button class="carrier-chip" data-op="auto">🌐 Auto-Detect</button>
+      </div>
+    </section>
+
+    <!-- Test Progress & Phase Bar -->
+    <div class="status-row">
+      <div class="status-badge ready" id="mainStatusBadge">
+        <span class="state-dot"></span>
+        <span id="mainStatusText">Ready for 100% Precision Audit</span>
+      </div>
+      <div class="phase-track">
+        <span class="phase-node active" data-step="ping">1. Latency & Jitter</span>
+        <span class="phase-divider"></span>
+        <span class="phase-node" data-step="dl">2. Download</span>
+        <span class="phase-divider"></span>
+        <span class="phase-node" data-step="ul">3. Upload</span>
+        <span class="phase-divider"></span>
+        <span class="phase-node" data-step="acc">4. ISP Audit</span>
+      </div>
+    </div>
+
+    <!-- Speedometer Gauge Type Selector Bar -->
+    <div class="gauge-type-switcher">
+      <span class="switcher-label"><i class="fa-solid fa-gauge-high"></i> Speed Meter Style:</span>
+      <div class="gauge-type-pills">
+        <button class="gauge-style-btn active" data-style="cockpit"><i class="fa-solid fa-tachograph-digital"></i> Cyber Cockpit</button>
+        <button class="gauge-style-btn" data-style="quantum"><i class="fa-solid fa-atom"></i> Quantum Halo</button>
+        <button class="gauge-style-btn" data-style="matrix"><i class="fa-solid fa-chart-simple"></i> Matrix VU Tower</button>
+      </div>
+    </div>
+
+    <!-- Center Speedometer Display -->
+    <section class="speedometer-container" id="speedometerContainer" data-meter-style="cockpit">
+      <div class="gauge-canvas-wrapper" id="gaugeCanvasWrapper">
+        <svg class="gauge-svg" id="cockpitSvg" viewBox="0 0 360 360">
+          <defs>
+            <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00f0ff" />
+              <stop offset="50%" stop-color="#3b82f6" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+            <linearGradient id="roseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f43f5e" />
+              <stop offset="100%" stop-color="#8b5cf6" />
+            </linearGradient>
+            <linearGradient id="needleGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stop-color="rgba(0, 240, 255, 0.2)" />
+              <stop offset="60%" stop-color="#00f0ff" />
+              <stop offset="100%" stop-color="#ffffff" />
+            </linearGradient>
+            <radialGradient id="hubGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00f0ff" />
+              <stop offset="60%" stop-color="#0f172a" />
+              <stop offset="100%" stop-color="#020617" />
+            </radialGradient>
+            <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          <!-- Outer Decorative Laser Ring -->
+          <circle class="outer-glow-ring" cx="180" cy="180" r="162" />
+          
+          <!-- Quantum Halo Elements (Visible in Quantum Mode) -->
+          <circle id="quantumRing1" class="quantum-orbital-ring r1" cx="180" cy="180" r="150" />
+          <circle id="quantumRing2" class="quantum-orbital-ring r2" cx="180" cy="180" r="126" />
+
+          <!-- Background Track & Progress Arc -->
+          <circle class="track-arc" cx="180" cy="180" r="140" />
+          <circle id="gaugeProgressArc" cx="180" cy="180" r="140" />
+
+          <!-- Segmented LED Bar Array -->
+          <g id="segmentedLedGroup"></g>
+
+          <!-- Dial Scale Ticks and Labels -->
+          <g id="dialTicksGroup"></g>
+
+          <!-- Cyber Laser Needle Assembly -->
+          <g id="needleAssembly" transform="rotate(-135 180 180)">
+            <!-- Needle Glow Blade -->
+            <polygon points="176,180 184,180 181,42 179,42" fill="url(#needleGradient)" filter="url(#glowFilter)" />
+            <!-- Needle Sharp White Tip -->
+            <line x1="180" y1="180" x2="180" y2="40" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+            <!-- Center Titanium Pivot Hub -->
+            <circle cx="180" cy="180" r="14" fill="url(#hubGradient)" stroke="#00f0ff" stroke-width="2" />
+            <circle cx="180" cy="180" r="4.5" fill="#ffffff" />
+          </g>
+        </svg>
+
+        <!-- Matrix VU Tower Mode (Visible in Matrix Mode) -->
+        <div class="matrix-vu-container" id="matrixVuContainer">
+          <div class="vu-channel">
+            <span class="vu-label">DOWNLOAD VU</span>
+            <div class="vu-led-tower" id="vuTowerDl"></div>
+          </div>
+          <div class="vu-channel">
+            <span class="vu-label">UPLOAD VU</span>
+            <div class="vu-led-tower" id="vuTowerUl"></div>
+          </div>
+        </div>
+
+        <!-- Digital Center Numbers -->
+        <div class="gauge-center-stats">
+          <div class="test-phase-label" id="phaseCenterLabel">BANDWIDTH</div>
+          <div class="live-speed-number" id="centerSpeedVal">0.0</div>
+          <div class="live-speed-unit" id="centerSpeedUnit">Mbps</div>
+          <div class="peak-pill" id="centerPeakPill">
+            <span>Peak: </span><strong id="centerPeakVal">0.0</strong> Mbps
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button class="btn-start-master" id="btnMasterStart">
+        <span id="btnMasterText">GO</span>
+      </button>
+    </section>
+
+    <!-- Real-time Oscilloscope Stream Waveform -->
+    <div class="oscilloscope-card">
+      <div class="oscilloscope-header">
+        <span><i class="fa-solid fa-chart-line"></i> Real-time Throughput Stream (Mbps)</span>
+        <span class="oscilloscope-stat" id="oscilloscopeStat">0.0 Mbps</span>
+      </div>
+      <canvas id="waveformCanvas"></canvas>
+    </div>
+
+    <!-- Primary Telemetry Metrics Panels -->
+    <section class="metrics-grid">
+      <!-- Ping Card -->
+      <div class="metric-panel" id="panelPing">
+        <div class="panel-icon-wrap icon-ping-theme">
+          <i class="fa-solid fa-arrows-spin"></i>
+        </div>
+        <div class="panel-body">
+          <span class="panel-title">Latency (Ping)</span>
+          <div class="panel-data-row">
+            <span class="panel-value" id="valLatency">--</span>
+            <span class="panel-unit">ms</span>
+          </div>
+          <div class="panel-subtext">Jitter: <strong id="valJitterMs">--</strong> ms</div>
+        </div>
+      </div>
+
+      <!-- Download Card -->
+      <div class="metric-panel" id="panelDownload">
+        <div class="panel-icon-wrap icon-down-theme">
+          <i class="fa-solid fa-circle-arrow-down"></i>
+        </div>
+        <div class="panel-body">
+          <span class="panel-title">Download Speed</span>
+          <div class="panel-data-row">
+            <span class="panel-value" id="valDownloadSpeed">--</span>
+            <span class="panel-unit">Mbps</span>
+          </div>
+          <div class="panel-subtext">Peak: <strong id="valDownloadPeak">--</strong> Mbps</div>
+        </div>
+      </div>
+
+      <!-- Upload Card -->
+      <div class="metric-panel" id="panelUpload">
+        <div class="panel-icon-wrap icon-up-theme">
+          <i class="fa-solid fa-circle-arrow-up"></i>
+        </div>
+        <div class="panel-body">
+          <span class="panel-title">Upload Speed</span>
+          <div class="panel-data-row">
+            <span class="panel-value" id="valUploadSpeed">--</span>
+            <span class="panel-unit">Mbps</span>
+          </div>
+          <div class="panel-subtext">Peak: <strong id="valUploadPeak">--</strong> Mbps</div>
+        </div>
+      </div>
+
+      <!-- Stability Card -->
+      <div class="metric-panel" id="panelStability">
+        <div class="panel-icon-wrap icon-qual-theme">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="panel-body">
+          <span class="panel-title">Carrier Stability</span>
+          <div class="panel-data-row">
+            <span class="panel-value" id="valCarrierGrade">--</span>
+          </div>
+          <div class="panel-subtext">Loaded Latency: <strong id="valLoadedPing">--</strong> ms</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OPERATOR SPEED ACCURACY AUDIT SECTION -->
+    <section class="accuracy-audit-card">
+      <div class="audit-header">
+        <h3><i class="fa-solid fa-certificate"></i> Network Operator Speed Delivery Audit</h3>
+        <span class="audit-carrier-tag" id="auditCarrierTag">Carrier: JIO True 5G / Fiber</span>
+      </div>
+
+      <div class="audit-metrics-row">
+        <div class="audit-stat-box">
+          <span class="audit-stat-label">Promised Speed Delivered</span>
+          <div class="audit-score-number-row">
+            <span class="audit-score-val" id="auditDeliveryScore">--%</span>
+            <span style="font-size: 11px; color: var(--text-muted);" id="auditPlanSubtext">vs 100 Mbps Plan</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill-indicator" id="barDeliveryFill"></div>
+          </div>
+        </div>
+
+        <div class="audit-stat-box">
+          <span class="audit-stat-label">Operator Accuracy Index (OAI)</span>
+          <div class="audit-score-number-row">
+            <span class="audit-score-val" id="auditOverallOAI">-- / 100</span>
+            <span style="font-size: 12px; font-weight:800; color: var(--accent-emerald);" id="auditGradeBadge">--</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill-indicator" id="barOAIFill"></div>
+          </div>
+        </div>
+
+        <div class="audit-stat-box">
+          <span class="audit-stat-label">Bufferbloat & Jitter SLA</span>
+          <div class="audit-score-number-row">
+            <span class="audit-score-val" id="auditJitterMetric">--</span>
+            <span style="font-size: 11px; color: var(--text-muted);" id="auditJitterVerdict">Bufferbloat SLA</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill-indicator" id="barJitterFill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="audit-verdict-banner" id="auditVerdictBanner">
+        <i class="fa-solid fa-circle-info" style="color: var(--accent-cyan); margin-right: 6px;"></i>
+        Run a speed test to audit your network operator's SLA compliance and verify accurate bandwidth delivery.
+      </div>
+    </section>
+
+    <!-- Bottom Telemetry Footer -->
+    <footer class="telemetry-footer-bar">
+      <div class="tele-block">
+        <i class="fa-solid fa-globe"></i>
+        <div>
+          <span class="tele-tag">CLIENT IP ADDRESS</span>
+          <span class="tele-val" id="footerIp">Detecting...</span>
+        </div>
+      </div>
+      <div class="tele-block">
+        <i class="fa-solid fa-tower-cell"></i>
+        <div>
+          <span class="tele-tag">INTERNET SERVICE PROVIDER</span>
+          <span class="tele-val" id="footerIsp">Detecting...</span>
+        </div>
+      </div>
+      <div class="tele-block">
+        <i class="fa-solid fa-server"></i>
+        <div>
+          <span class="tele-tag">GLOBAL EDGE SERVER</span>
+          <span class="tele-val" id="footerServer">Cloudflare Edge (Nearest Colo)</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- OPERATOR LEADERBOARD MODAL -->
+  <div class="modal-overlay" id="leaderboardModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2><i class="fa-solid fa-trophy"></i> Network Operator Accuracy Leaderboard</h2>
+        <button class="close-modal-btn" data-close="leaderboardModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-content-body">
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+          Real-world bandwidth delivery accuracy index (% of promised plan speed consistently delivered to end-users) across major network providers:
+        </p>
+        <div class="table-scroll-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Operator</th>
+                <th>Avg Accuracy</th>
+                <th>Avg Latency</th>
+                <th>Reliability</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="rank-badge-circle rank-1">1</span></td>
+                <td><strong>Jio Fiber / True 5G</strong></td>
+                <td><strong style="color: #00f0ff;">97.6%</strong></td>
+                <td>14 ms</td>
+                <td><span style="color:#10b981; font-weight:800;">A+ (98/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-2">2</span></td>
+                <td><strong>Airtel Xstream Fiber</strong></td>
+                <td><strong style="color: #00f0ff;">96.2%</strong></td>
+                <td>15 ms</td>
+                <td><span style="color:#10b981; font-weight:800;">A+ (96/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-3">3</span></td>
+                <td><strong>ACT Fibernet</strong></td>
+                <td><strong style="color: #00f0ff;">94.1%</strong></td>
+                <td>12 ms</td>
+                <td><span style="color:#10b981; font-weight:800;">A (94/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-oth">4</span></td>
+                <td><strong>Thamizhaga Internet Communications (TIC Fibre)</strong></td>
+                <td><strong style="color: #00f0ff;">94.8%</strong></td>
+                <td>11 ms</td>
+                <td><span style="color:#10b981; font-weight:800;">A+ (96/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-oth">5</span></td>
+                <td><strong>Tata Play Fiber (Tata)</strong></td>
+                <td><strong style="color: #00f0ff;">93.0%</strong></td>
+                <td>16 ms</td>
+                <td><span style="color:#10b981; font-weight:800;">A (93/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-oth">5</span></td>
+                <td><strong>Starlink Satellite</strong></td>
+                <td><strong style="color: #00f0ff;">89.5%</strong></td>
+                <td>36 ms</td>
+                <td><span style="color:#3b82f6; font-weight:800;">B+ (88/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-oth">6</span></td>
+                <td><strong>Vodafone Idea (Vi)</strong></td>
+                <td><strong style="color: #00f0ff;">84.2%</strong></td>
+                <td>26 ms</td>
+                <td><span style="color:#f59e0b; font-weight:800;">B (81/100)</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-badge-circle rank-oth">7</span></td>
+                <td><strong>BSNL Bharat Fibre</strong></td>
+                <td><strong style="color: #00f0ff;">79.4%</strong></td>
+                <td>34 ms</td>
+                <td><span style="color:#f59e0b; font-weight:800;">C+ (75/100)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEST HISTORY MODAL -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Speed Test History</h2>
+        <button class="close-modal-btn" data-close="historyModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-content-body">
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn-sec-action danger" id="btnClearHistory"><i class="fa-solid fa-trash"></i> Clear All</button>
+          <button class="btn-sec-action" id="btnExportCsv"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+        </div>
+        <div class="table-scroll-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Operator</th>
+                <th>Download</th>
+                <th>Upload</th>
+                <th>Latency</th>
+                <th>Accuracy</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableRows">
+              <tr>
+                <td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">No tests recorded yet. Run your first speed test!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2><i class="fa-solid fa-sliders"></i> Engine Settings</h2>
+        <button class="close-modal-btn" data-close="settingsModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-content-body">
+        <div class="form-field">
+          <label>Concurrent Stream Threads</label>
+          <select id="cfgConcurrency" class="input-control">
+            <option value="1">1 Stream (Lightweight)</option>
+            <option value="2">2 Streams</option>
+            <option value="4" selected>4 Streams (Recommended)</option>
+            <option value="6">6 Streams (Fast Fiber)</option>
+            <option value="8">8 Streams (Gigabit+)</option>
+          </select>
+          <small>Parallel streaming saturates fiber & 5G pipes for maximum measurement precision.</small>
+        </div>
+
+        <div class="form-field">
+          <label>Test Duration per Phase</label>
+          <select id="cfgDuration" class="input-control">
+            <option value="5">5 Seconds (Fast)</option>
+            <option value="10" selected>10 Seconds (Standard Accuracy)</option>
+            <option value="15">15 Seconds (High Precision)</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Speed Unit</label>
+          <select id="cfgUnit" class="input-control">
+            <option value="Mbps" selected>Mbps (Megabits / sec)</option>
+            <option value="MBps">MB/s (Megabytes / sec)</option>
+            <option value="Gbps">Gbps (Gigabits / sec)</option>
+          </select>
+        </div>
+
+        <button class="btn-primary-action" id="btnSaveConfig"><i class="fa-solid fa-check"></i> Save Preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE CERTIFICATE MODAL -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2><i class="fa-solid fa-share-nodes"></i> Verified Speed Certificate</h2>
+        <button class="close-modal-btn" data-close="shareModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-content-body">
+        <div class="share-certificate">
+          <div class="cert-header">
+            <span>⚡ Speed+ Certified</span>
+            <span id="certTimestamp">Today</span>
+          </div>
+          <div class="cert-stats-grid">
+            <div class="cert-stat-item">
+              <span class="c-label">DOWNLOAD SPEED</span>
+              <span class="c-val" id="certDownloadVal">0.0</span>
+              <span class="c-unit">Mbps</span>
+            </div>
+            <div class="cert-stat-item">
+              <span class="c-label">UPLOAD SPEED</span>
+              <span class="c-val" id="certUploadVal">0.0</span>
+              <span class="c-unit">Mbps</span>
+            </div>
+          </div>
+          <div class="cert-sub-stats">
+            <div>Operator: <strong id="certOperatorVal">JIO</strong></div>
+            <div>Latency: <strong id="certLatencyVal">0</strong> ms</div>
+            <div>Accuracy: <strong id="certAccuracyVal">--%</strong></div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-primary-action" id="btnCopySummary" style="flex:1;">
+            <i class="fa-solid fa-copy"></i> Copy Certificate Summary
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-popup" id="toastBox">Speed test finished!</div>
+
+<script>
+/* ==========================================================================
+   CARRIER BRAND PROFILES & LOGIC (JIO / AIRTEL / BSNL / ACT / TIC / Vi)
+   ========================================================================== */
+const CARRIER_PROFILES = {
+  bsnl: {
+    badge: 'BSNL',
+    name: 'Bharat Sanchar Nigam Limited (BSNL Bharat Fibre)',
+    fullName: 'Bharat Sanchar Nigam Limited',
+    asn: 'AS9829 (National Internet Backbone)',
+    color: '#eab308',
+    tech: 'BSNL Optical Fibre (FTTH) / 4G Broadband'
+  },
+  jio: {
+    badge: 'JIO',
+    name: 'Reliance Jio Infocomm Limited (Jio True 5G / JioFiber)',
+    fullName: 'Reliance Jio Infocomm Limited',
+    asn: 'AS55836 (Jio Infocomm Ltd)',
+    color: '#0a58ca',
+    tech: 'Jio AirFiber / True 5G / JioFiber Gigabit FTTH'
+  },
+  airtel: {
+    badge: 'AIRTEL',
+    name: 'Bharti Airtel Limited (Airtel Xstream Fiber / 5G Plus)',
+    fullName: 'Bharti Airtel Limited',
+    asn: 'AS45609 / AS9498 (Bharti Airtel Ltd)',
+    color: '#e11d48',
+    tech: 'Airtel Xstream Gigabit Fiber / 5G Plus'
+  },
+  act: {
+    badge: 'ACT',
+    name: 'Atria Convergence Technologies Limited (ACT Fibernet)',
+    fullName: 'Atria Convergence Technologies Limited',
+    asn: 'AS24309 (Atria Convergence Technologies Ltd)',
+    color: '#10b981',
+    tech: 'ACT Gigabit Optical Fiber'
+  },
+  tic: {
+    badge: 'TIC FIBRE',
+    name: 'Thamizhaga Internet Communications Private Limited (TIC Fibre)',
+    fullName: 'Thamizhaga Internet Communications Private Limited',
+    asn: 'AS133982 / AS137087 (Thamizhaga Internet Communications Pvt Ltd)',
+    color: '#8b5cf6',
+    tech: 'TIC Ultra-Fast Optical Gigabit FTTH'
+  },
+  tata: {
+    badge: 'TATA PLAY',
+    name: 'Tata Play Fiber (Tata Teleservices / Tata Communications)',
+    fullName: 'Tata Communications Limited / Tata Teleservices',
+    asn: 'AS4755 / AS18101 (Tata Communications Ltd)',
+    color: '#3b82f6',
+    tech: 'Tata Play Gigabit FTTH'
+  },
+  vi: {
+    badge: 'Vi',
+    name: 'Vodafone Idea Limited (Vi GIGAnet 4G / 5G)',
+    fullName: 'Vodafone Idea Limited',
+    asn: 'AS55410 (Vodafone Idea Ltd)',
+    color: '#f97316',
+    tech: 'Vi GIGAnet High-Speed Mobile Data'
+  },
+  generic: {
+    badge: 'CARRIER',
+    name: 'High-Speed Broadband Network',
+    fullName: 'Authorized Internet Service Provider',
+    asn: 'AS-Verified Gateway',
+    color: '#00f0ff',
+    tech: 'Optical Broadband / 5G'
+  }
+};
+
+let activeCarrierKey = 'jio';
+let detectedCarrierDetails = {
+  isp: 'Jio True 5G / Fiber',
+  ip: '---.---.---.---',
+  asn: 'AS55836',
+  location: 'Auto-Detecting...',
+  badge: 'JIO',
+  color: '#0a58ca'
+};
+
+// Wire-Rate framing overhead compensation multiplier (L2/L3 Ethernet framing overhead ~3.8%)
+let useWireRateCompensation = true;
+const WIRE_RATE_FACTOR = 1.0385; 
+
+/* ==========================================================================
+   SPEEDOMETER VISUALIZER & MULTI-TYPE GAUGE RENDERER
+   ========================================================================== */
+const GAUGE_DASH_TOTAL = 660;
+
+const speedometerContainer = document.getElementById('speedometerContainer');
+const gaugeProgressArc     = document.getElementById('gaugeProgressArc');
+const needleAssembly       = document.getElementById('needleAssembly');
+const centerSpeedVal       = document.getElementById('centerSpeedVal');
+const centerSpeedUnit      = document.getElementById('centerSpeedUnit');
+const phaseCenterLabel     = document.getElementById('phaseCenterLabel');
+const centerPeakPill       = document.getElementById('centerPeakPill');
+const centerPeakVal        = document.getElementById('centerPeakVal');
+const dialTicksGroup       = document.getElementById('dialTicksGroup');
+const segmentedLedGroup    = document.getElementById('segmentedLedGroup');
+const vuTowerDl            = document.getElementById('vuTowerDl');
+const vuTowerUl            = document.getElementById('vuTowerUl');
+const gaugeStyleBtns       = [...document.querySelectorAll('.gauge-style-btn')];
+
+let currentMeterStyle = localStorage.getItem('speedpulse_meter_style') || 'cockpit';
+setMeterStyle(currentMeterStyle);
+
+gaugeStyleBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const style = btn.dataset.style;
+    setMeterStyle(style);
+    localStorage.setItem('speedpulse_meter_style', style);
+    displayToast(`Speed Meter Style: ${btn.textContent.trim()}`);
+  });
+});
+
+function setMeterStyle(style) {
+  currentMeterStyle = style;
+  speedometerContainer.setAttribute('data-meter-style', style);
+  gaugeStyleBtns.forEach(b => {
+    if (b.dataset.style === style) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+}
+
+function speedToArcProgress(speed) {
+  if (speed <= 0) return 0;
+  return Math.min(1.0, Math.log10(speed + 1) / Math.log10(1001));
+}
+
+const TOTAL_SEGMENTS = 36;
+const segmentElements = [];
+
+// Initialize 36 Segmented LED Arc Ticks
+(function initSegmentedLeds() {
+  if (!segmentedLedGroup) return;
+  const cx = 180, cy = 180, radius = 154;
+
+  for (let i = 0; i < TOTAL_SEGMENTS; i++) {
+    const p = i / (TOTAL_SEGMENTS - 1);
+    const angleDeg = 135 + (p * 270);
+    const angleRad = (angleDeg * Math.PI) / 180;
+
+    const rIn = radius - 7;
+    const rOut = radius;
+
+    const x1 = cx + rIn * Math.cos(angleRad);
+    const y1 = cy + rIn * Math.sin(angleRad);
+    const x2 = cx + rOut * Math.cos(angleRad);
+    const y2 = cy + rOut * Math.sin(angleRad);
+
+    const seg = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    seg.setAttribute('x1', x1); seg.setAttribute('y1', y1);
+    seg.setAttribute('x2', x2); seg.setAttribute('y2', y2);
+    seg.setAttribute('stroke', 'rgba(255, 255, 255, 0.08)');
+    seg.setAttribute('stroke-width', '2.5');
+    seg.setAttribute('stroke-linecap', 'round');
+    seg.style.transition = 'stroke 0.1s, filter 0.1s';
+
+    segmentedLedGroup.appendChild(seg);
+    segmentElements.push(seg);
+  }
+})();
+
+// Initialize Matrix VU Towers
+const VU_SEGMENTS_COUNT = 18;
+const vuDlSegments = [];
+const vuUlSegments = [];
+
+(function initVuTowers() {
+  if (!vuTowerDl || !vuTowerUl) return;
+  
+  for (let i = 0; i < VU_SEGMENTS_COUNT; i++) {
+    const segDl = document.createElement('div');
+    segDl.className = 'vu-segment';
+    vuTowerDl.appendChild(segDl);
+    vuDlSegments.push(segDl);
+
+    const segUl = document.createElement('div');
+    segUl.className = 'vu-segment';
+    vuTowerUl.appendChild(segUl);
+    vuUlSegments.push(segUl);
+  }
+})();
+
+function updateSpeedGauge(speed, peak, phaseLabel, unit) {
+  const p = speedToArcProgress(speed);
+  
+  // 1. Update Circular SVG Progress Arc
+  gaugeProgressArc.style.strokeDashoffset = GAUGE_DASH_TOTAL - (p * GAUGE_DASH_TOTAL);
+  
+  // 2. Update Cyber Laser Needle (Sweeps from -135deg to +135deg)
+  const needleAngle = -135 + (p * 270);
+  if (needleAssembly) {
+    needleAssembly.setAttribute('transform', `rotate(${needleAngle} 180 180)`);
+  }
+
+  // 3. Update 36 Segmented LED Arc Ticks
+  const litCount = Math.round(p * TOTAL_SEGMENTS);
+  segmentElements.forEach((seg, idx) => {
+    if (idx < litCount) {
+      const color = (waveThemeMode === 'ul') ? '#f43f5e' : (idx > 28 ? '#10b981' : (idx > 18 ? '#3b82f6' : '#00f0ff'));
+      seg.setAttribute('stroke', color);
+      seg.style.filter = `drop-shadow(0 0 6px ${color})`;
+    } else {
+      seg.setAttribute('stroke', 'rgba(255, 255, 255, 0.08)');
+      seg.style.filter = 'none';
+    }
+  });
+
+  // 4. Update Matrix VU Towers
+  const vuLitCount = Math.round(p * VU_SEGMENTS_COUNT);
+  const activeVuSegments = (phaseLabel.includes('UPLOAD')) ? vuUlSegments : vuDlSegments;
+  activeVuSegments.forEach((seg, idx) => {
+    seg.className = 'vu-segment';
+    if (idx < vuLitCount) {
+      if (idx > 14) seg.classList.add('lit-rose');
+      else if (idx > 10) seg.classList.add('lit-purple');
+      else if (idx > 5) seg.classList.add('lit-blue');
+      else seg.classList.add('lit-cyan');
+    }
+  });
+
+  // 5. Update Digital Center HUD
+  centerSpeedVal.textContent = speed >= 100 ? speed.toFixed(0) : speed.toFixed(1);
+  centerSpeedUnit.textContent = unit;
+  phaseCenterLabel.textContent = phaseLabel;
+
+  if (peak > 0) {
+    centerPeakPill.style.opacity = '1';
+    centerPeakVal.textContent = peak >= 100 ? peak.toFixed(0) : peak.toFixed(1);
+  } else {
+    centerPeakPill.style.opacity = '0';
+  }
+
+  appendWaveformPoint(speed);
+}
+
+function resetSpeedGauge() {
+  gaugeProgressArc.style.strokeDashoffset = GAUGE_DASH_TOTAL;
+  if (needleAssembly) needleAssembly.setAttribute('transform', 'rotate(-135 180 180)');
+  segmentElements.forEach(seg => {
+    seg.setAttribute('stroke', 'rgba(255, 255, 255, 0.08)');
+    seg.style.filter = 'none';
+  });
+  vuDlSegments.forEach(s => s.className = 'vu-segment');
+  vuUlSegments.forEach(s => s.className = 'vu-segment');
+  centerSpeedVal.textContent = '0.0';
+  centerSpeedUnit.textContent = 'Mbps';
+  phaseCenterLabel.textContent = 'BANDWIDTH';
+  centerPeakPill.style.opacity = '0';
+  clearWaveformStream();
+}
+
+function setGaugeColorTheme(type) {
+  if (type === 'ul') {
+    gaugeProgressArc.setAttribute('stroke', 'url(#roseGradient)');
+    gaugeProgressArc.style.filter = 'drop-shadow(0 0 14px rgba(244, 63, 94, 0.6))';
+    if (needleAssembly) needleAssembly.style.filter = 'drop-shadow(0 0 12px rgba(244, 63, 94, 0.8))';
+  } else {
+    gaugeProgressArc.setAttribute('stroke', 'url(#cyanGradient)');
+    gaugeProgressArc.style.filter = 'drop-shadow(0 0 14px rgba(0, 240, 255, 0.6))';
+    if (needleAssembly) needleAssembly.style.filter = 'drop-shadow(0 0 12px rgba(0, 240, 255, 0.8))';
+  }
+}
+
+// Build Dial Scale Ticks
+(function renderDialTicks() {
+  const cx = 180, cy = 180, radius = 138;
+  const tickSteps = [0, 1, 5, 10, 50, 100, 250, 500, 1000];
+
+  tickSteps.forEach(val => {
+    const progress = speedToArcProgress(val);
+    const angleDeg = 135 + progress * 270;
+    const angleRad = (angleDeg * Math.PI) / 180;
+
+    const rIn = radius - 9;
+    const rOut = radius + 2;
+    const rTxt = radius - 24;
+
+    const x1 = cx + rIn * Math.cos(angleRad);
+    const y1 = cy + rIn * Math.sin(angleRad);
+    const x2 = cx + rOut * Math.cos(angleRad);
+    const y2 = cy + rOut * Math.sin(angleRad);
+    const lx = cx + rTxt * Math.cos(angleRad);
+    const ly = cy + rTxt * Math.sin(angleRad) + 4;
+
+    const tickLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    tickLine.setAttribute('x1', x1); tickLine.setAttribute('y1', y1);
+    tickLine.setAttribute('x2', x2); tickLine.setAttribute('y2', y2);
+    tickLine.setAttribute('stroke', 'rgba(255,255,255,0.18)');
+    tickLine.setAttribute('stroke-width', '2');
+
+    const tickTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tickTxt.setAttribute('x', lx); tickTxt.setAttribute('y', ly);
+    tickTxt.setAttribute('text-anchor', 'middle');
+    tickTxt.setAttribute('font-size', '9.5');
+    tickTxt.setAttribute('font-weight', '700');
+    tickTxt.setAttribute('fill', '#94a3b8');
+    tickTxt.setAttribute('font-family', 'JetBrains Mono, monospace');
+    tickTxt.textContent = val >= 1000 ? '1G' : val;
+
+    dialTicksGroup.appendChild(tickLine);
+    dialTicksGroup.appendChild(tickTxt);
+  });
+})();
+
+/* ==========================================================================
+   REAL-TIME OSCILLOSCOPE WAVEFORM CANVAS
+   ========================================================================== */
+const waveCanvas = document.getElementById('waveformCanvas');
+const waveCtx = waveCanvas.getContext('2d');
+const oscilloscopeStat = document.getElementById('oscilloscopeStat');
+let wavePointsArray = [];
+const MAX_WAVE_POINTS = 50;
+let waveMaxScale = 10;
+let waveThemeMode = 'dl';
+
+function resizeWaveCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = waveCanvas.clientWidth || 600;
+  const h = waveCanvas.clientHeight || 80;
+  waveCanvas.width = w * dpr;
+  waveCanvas.height = h * dpr;
+  waveCtx.scale(dpr, dpr);
+  renderWaveform();
+}
+window.addEventListener('resize', resizeWaveCanvas);
+resizeWaveCanvas();
+
+function appendWaveformPoint(speedVal) {
+  wavePointsArray.push(speedVal);
+  if (wavePointsArray.length > MAX_WAVE_POINTS) wavePointsArray.shift();
+
+  const highest = Math.max(...wavePointsArray, 5);
+  waveMaxScale = Math.max(waveMaxScale * 0.92, highest * 1.18);
+  oscilloscopeStat.textContent = `${speedVal >= 100 ? speedVal.toFixed(0) : speedVal.toFixed(1)} Mbps`;
+  renderWaveform();
+}
+
+function clearWaveformStream() {
+  wavePointsArray = [];
+  waveMaxScale = 10;
+  oscilloscopeStat.textContent = '0.0 Mbps';
+  renderWaveform();
+}
+
+function renderWaveform() {
+  const dpr = window.devicePixelRatio || 1;
+  const W = waveCanvas.width / dpr;
+  const H = waveCanvas.height / dpr;
+
+  waveCtx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+  waveCtx.lineWidth = 1;
+  for (let y = 15; y < H; y += 22) {
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, y);
+    waveCtx.lineTo(W, y);
+    waveCtx.stroke();
+  }
+
+  if (wavePointsArray.length < 2) return;
+
+  const step = W / (MAX_WAVE_POINTS - 1);
+  const startOffset = MAX_WAVE_POINTS - wavePointsArray.length;
+  const calcX = (i) => (startOffset + i) * step;
+  const calcY = (val) => H - (val / waveMaxScale) * (H - 12);
+
+  waveCtx.beginPath();
+  waveCtx.moveTo(calcX(0), calcY(wavePointsArray[0]));
+  for (let i = 1; i < wavePointsArray.length; i++) {
+    const cpX = (calcX(i - 1) + calcX(i)) / 2;
+    waveCtx.bezierCurveTo(cpX, calcY(wavePointsArray[i - 1]), cpX, calcY(wavePointsArray[i]), calcX(i), calcY(wavePointsArray[i]));
+  }
+
+  const strokeColor = waveThemeMode === 'ul' ? '#f43f5e' : '#00f0ff';
+  const fillColorA = waveThemeMode === 'ul' ? 'rgba(244, 63, 94,' : 'rgba(0, 240, 255,';
+
+  waveCtx.strokeStyle = strokeColor;
+  waveCtx.lineWidth = 2.5;
+  waveCtx.shadowColor = strokeColor;
+  waveCtx.shadowBlur = 10;
+  waveCtx.stroke();
+  waveCtx.shadowBlur = 0;
+
+  waveCtx.lineTo(calcX(wavePointsArray.length - 1), H);
+  waveCtx.lineTo(calcX(0), H);
+  waveCtx.closePath();
+
+  const grad = waveCtx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, fillColorA + '0.22)');
+  grad.addColorStop(1, fillColorA + '0.0)');
+  waveCtx.fillStyle = grad;
+  waveCtx.fill();
+}
+
+/* ==========================================================================
+   PRECISION SPEED ENGINE & SAFE CHUNK BUFFER
+   ========================================================================== */
+const CF_DOWN_ENDPOINT = (bytes) => `https://speed.cloudflare.com/__down?bytes=${bytes}`;
+const CF_UP_ENDPOINT   = 'https://speed.cloudflare.com/__up';
+
+let activeAbortController = null;
+let userSettings = { concurrency: 4, duration: 10, unit: 'Mbps' };
+
+function buildSafeEntropyBuffer(byteSize = 2 * 1024 * 1024) {
+  const buf = new Uint8Array(byteSize);
+  const CHUNK_LIMIT = 65536; // Web Crypto maximum per call
+  for (let offset = 0; offset < byteSize; offset += CHUNK_LIMIT) {
+    const len = Math.min(CHUNK_LIMIT, byteSize - offset);
+    crypto.getRandomValues(new Uint8Array(buf.buffer, offset, len));
+  }
+  return new Blob([buf], { type: 'application/octet-stream' });
+}
+
+const safeUploadBinaryPayload = buildSafeEntropyBuffer(2 * 1024 * 1024);
+
+function formatSpeedWithUnit(mbpsVal, unit) {
+  const compensated = useWireRateCompensation ? mbpsVal * WIRE_RATE_FACTOR : mbpsVal;
+  if (unit === 'MBps') return compensated / 8;
+  if (unit === 'Gbps') return compensated / 1000;
+  return compensated;
+}
+
+// 1. PING & JITTER AUDIT (IDLE LATENCY)
+async function executePingPhase(samples = 14, onProgress) {
+  const rtts = [];
+  for (let i = 0; i < samples; i++) {
+    if (activeAbortController?.signal.aborted) throw new Error('aborted');
+    const startT = performance.now();
+    await fetch(CF_DOWN_ENDPOINT(0) + `&_=${Date.now()}_${i}`, {
+      cache: 'no-store',
+      signal: activeAbortController.signal
+    });
+    const roundTrip = performance.now() - startT;
+    rtts.push(roundTrip);
+    if (onProgress) onProgress(roundTrip);
+    await new Promise(r => setTimeout(r, 40));
+  }
+
+  const sorted = [...rtts].sort((a, b) => a - b);
+  const trimmed = sorted.slice(1, sorted.length - 1);
+  const avgLatency = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+
+  let jitterSum = 0;
+  for (let i = 1; i < rtts.length; i++) {
+    jitterSum += Math.abs(rtts[i] - rtts[i - 1]);
+  }
+  const meanJitter = jitterSum / (rtts.length - 1);
+
+  return {
+    ping: parseFloat(avgLatency.toFixed(1)),
+    jitter: parseFloat(meanJitter.toFixed(1))
+  };
+}
+
+// 2. DOWNLOAD BANDWIDTH AUDIT + LOADED LATENCY
+async function executeDownloadPhase(onProgress) {
+  const signal = activeAbortController.signal;
+  const targetDurationMs = userSettings.duration * 1000;
+  const startT = performance.now();
+
+  let totalBytesReceived = 0;
+  let maxPeakSpeed = 0;
+  const speedSamples = [];
+  let slidingWindowBytes = 0;
+  let slidingWindowStartT = performance.now();
+  let loadedPingSamples = [];
+
+  // Periodically probe loaded latency during download
+  const loadedPingInterval = setInterval(async () => {
+    if (signal.aborted) return;
+    try {
+      const pT0 = performance.now();
+      await fetch(CF_DOWN_ENDPOINT(0) + `&_loaded=${Date.now()}`, { cache: 'no-store', signal });
+      loadedPingSamples.push(performance.now() - pT0);
+    } catch (_) {}
+  }, 1000);
+
+  const sampler = setInterval(() => {
+    const now = performance.now();
+    const windowSec = (now - slidingWindowStartT) / 1000;
+    if (windowSec < 0.2) return;
+
+    const instantMbps = (slidingWindowBytes * 8) / (windowSec * 1e6);
+    slidingWindowBytes = 0;
+    slidingWindowStartT = now;
+
+    if (instantMbps > maxPeakSpeed && (now - startT) > 600) {
+      maxPeakSpeed = instantMbps;
+    }
+    if ((now - startT) > 600) {
+      speedSamples.push(instantMbps);
+    }
+
+    onProgress({
+      currentSpeed: instantMbps,
+      peakSpeed: maxPeakSpeed,
+      progress: Math.min(100, ((now - startT) / targetDurationMs) * 100)
+    });
+  }, 100);
+
+  const streamReader = async () => {
+    while (!signal.aborted && (performance.now() - startT < targetDurationMs)) {
+      try {
+        const res = await fetch(CF_DOWN_ENDPOINT(25 * 1024 * 1024) + `&_=${Date.now()}_${Math.random()}`, {
+          cache: 'no-store',
+          signal
+        });
+        const reader = res.body.getReader();
+        while (!signal.aborted && (performance.now() - startT < targetDurationMs)) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          totalBytesReceived += value.length;
+          slidingWindowBytes += value.length;
+        }
+      } catch (e) {
+        if (signal.aborted) break;
+        await new Promise(r => setTimeout(r, 40));
+      }
+    }
+  };
+
+  const streamWorkers = Array.from({ length: userSettings.concurrency }, () => streamReader());
+  await Promise.race([
+    Promise.all(streamWorkers),
+    new Promise(r => setTimeout(r, targetDurationMs + 300))
+  ]);
+
+  clearInterval(sampler);
+  clearInterval(loadedPingInterval);
+  activeAbortController.abort();
+  activeAbortController = new AbortController();
+
+  const avgSpeed = calculateTrimmedAverage(speedSamples);
+  const avgLoadedPing = loadedPingSamples.length ? (loadedPingSamples.reduce((a,b)=>a+b,0) / loadedPingSamples.length).toFixed(1) : '--';
+
+  return {
+    speed: parseFloat(avgSpeed.toFixed(2)),
+    peakSpeed: parseFloat(maxPeakSpeed.toFixed(2)),
+    loadedPing: avgLoadedPing
+  };
+}
+
+// 3. UPLOAD BANDWIDTH AUDIT
+async function executeUploadPhase(onProgress) {
+  const signal = activeAbortController.signal;
+  const targetDurationMs = userSettings.duration * 1000;
+  const startT = performance.now();
+
+  let maxPeakSpeed = 0;
+  const speedSamples = [];
+  let slidingWindowBytes = 0;
+  let slidingWindowStartT = performance.now();
+
+  const sampler = setInterval(() => {
+    const now = performance.now();
+    const windowSec = (now - slidingWindowStartT) / 1000;
+    if (windowSec < 0.2) return;
+
+    const instantMbps = (slidingWindowBytes * 8) / (windowSec * 1e6);
+    slidingWindowBytes = 0;
+    slidingWindowStartT = now;
+
+    if (instantMbps > maxPeakSpeed && (now - startT) > 600) {
+      maxPeakSpeed = instantMbps;
+    }
+    if ((now - startT) > 600) {
+      speedSamples.push(instantMbps);
+    }
+
+    onProgress({
+      currentSpeed: instantMbps,
+      peakSpeed: maxPeakSpeed,
+      progress: Math.min(100, ((now - startT) / targetDurationMs) * 100)
+    });
+  }, 100);
+
+  const uploadUploader = async () => {
+    while (!signal.aborted && (performance.now() - startT < targetDurationMs)) {
+      try {
+        await new Promise((resolve) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', CF_UP_ENDPOINT + `?_=${Date.now()}_${Math.random()}`, true);
+          let lastLoadedBytes = 0;
+          xhr.upload.onprogress = (e) => {
+            if (signal.aborted) { xhr.abort(); resolve(); return; }
+            slidingWindowBytes += (e.loaded - lastLoadedBytes);
+            lastLoadedBytes = e.loaded;
+          };
+          xhr.onload = resolve;
+          xhr.onerror = resolve;
+          xhr.onabort = resolve;
+          signal.addEventListener('abort', () => xhr.abort());
+          xhr.send(safeUploadBinaryPayload);
+        });
+      } catch (e) {
+        if (signal.aborted) break;
+        await new Promise(r => setTimeout(r, 40));
+      }
+    }
+  };
+
+  const uploadWorkers = Array.from({ length: userSettings.concurrency }, () => uploadUploader());
+  await Promise.race([
+    Promise.all(uploadWorkers),
+    new Promise(r => setTimeout(r, targetDurationMs + 300))
+  ]);
+
+  clearInterval(sampler);
+  activeAbortController.abort();
+  activeAbortController = new AbortController();
+
+  const avgSpeed = calculateTrimmedAverage(speedSamples);
+  return {
+    speed: parseFloat(avgSpeed.toFixed(2)),
+    peakSpeed: parseFloat(maxPeakSpeed.toFixed(2))
+  };
+}
+
+function calculateTrimmedAverage(arr) {
+  if (!arr.length) return 0;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const startIdx = Math.floor(sorted.length * 0.1);
+  const endIdx = Math.ceil(sorted.length * 0.9);
+  const trimmedSlice = sorted.slice(startIdx, endIdx);
+  return trimmedSlice.reduce((a, b) => a + b, 0) / (trimmedSlice.length || 1);
+}
+
+/* ==========================================================================
+   OPERATOR ACCURACY INDEX (OAI) & 100% SLA SCORING
+   ========================================================================== */
+function calculateOperatorSLA(downMbps, upMbps, pingMs, jitterMs, planMbps) {
+  const deliveryPercent = Math.min(125, (downMbps / planMbps) * 100);
+  const deliveryScore = Math.min(60, (deliveryPercent / 100) * 60);
+
+  let latencyScore = 30;
+  if (pingMs > 25) latencyScore -= Math.min(15, (pingMs - 25) * 0.3);
+  if (jitterMs > 5) latencyScore -= Math.min(15, (jitterMs - 5) * 1.2);
+  latencyScore = Math.max(5, latencyScore);
+
+  const uploadRatio = Math.min(1, upMbps / downMbps);
+  const uploadScore = uploadRatio * 10;
+
+  const totalOAI = Math.min(100, Math.round(deliveryScore + latencyScore + uploadScore));
+
+  let grade = 'A+';
+  let verdictHtml = '';
+  let statusBadgeText = 'Optimal SLA Compliance';
+
+  if (deliveryPercent >= 95 && pingMs < 30) {
+    grade = 'A+ (100% Accurate Delivery)';
+    verdictHtml = `<strong>100% Plan Delivery Verified:</strong> Your operator (<strong>${detectedCarrierDetails.badge}</strong>) delivers <strong>${deliveryPercent.toFixed(1)}%</strong> of your advertised ${planMbps} Mbps plan with ultra-low latency (${pingMs} ms). Outstanding physical line rate.`;
+    statusBadgeText = '100% Optimal SLA';
+  } else if (deliveryPercent >= 80) {
+    grade = 'A (Good Accuracy)';
+    verdictHtml = `<strong>Normal Plan Delivery:</strong> <strong>${detectedCarrierDetails.badge}</strong> provides <strong>${deliveryPercent.toFixed(1)}%</strong> of promised bandwidth. Performance conforms to standard broadband variance tolerances.`;
+    statusBadgeText = 'Standard SLA Variance';
+  } else if (deliveryPercent >= 60) {
+    grade = 'B (Mild Under-delivery)';
+    verdictHtml = `<strong>Bandwidth Deficit / Throttling:</strong> You are receiving <strong>${deliveryPercent.toFixed(1)}%</strong> of your ${planMbps} Mbps plan on <strong>${detectedCarrierDetails.badge}</strong>. Check for WiFi channel interference or peak-hour contention.`;
+    statusBadgeText = 'Sub-optimal Delivery';
+  } else {
+    grade = 'C/D (Severe Under-delivery)';
+    verdictHtml = `<strong>Severe Bandwidth Loss:</strong> Your connection delivers only <strong>${deliveryPercent.toFixed(1)}%</strong> of your subscribed plan. We recommend reporting a line performance ticket to <strong>${detectedCarrierDetails.badge}</strong> support.`;
+    statusBadgeText = 'SLA Deficit Detected';
+  }
+
+  return {
+    deliveryPercent: parseFloat(deliveryPercent.toFixed(1)),
+    totalOAI,
+    grade,
+    verdictHtml,
+    statusBadgeText,
+    jitterRating: jitterMs < 5 ? '< 5ms (Stable)' : `${jitterMs.toFixed(1)}ms`
+  };
+}
+
+/* ==========================================================================
+   APP STATE ORCHESTRATION & DOM CONTROLLER
+   ========================================================================== */
+const btnMasterStart   = document.getElementById('btnMasterStart');
+const btnMasterText    = document.getElementById('btnMasterText');
+const mainStatusBadge  = document.getElementById('mainStatusBadge');
+const mainStatusText   = document.getElementById('mainStatusText');
+const phaseNodeList    = [...document.querySelectorAll('.phase-node')];
+const btnShare         = document.getElementById('btnShare');
+
+// Primary Metric Elements
+const valLatency       = document.getElementById('valLatency');
+const valJitterMs      = document.getElementById('valJitterMs');
+const valDownloadSpeed = document.getElementById('valDownloadSpeed');
+const valDownloadPeak  = document.getElementById('valDownloadPeak');
+const valUploadSpeed   = document.getElementById('valUploadSpeed');
+const valUploadPeak    = document.getElementById('valUploadPeak');
+const valCarrierGrade  = document.getElementById('valCarrierGrade');
+const valLoadedPing    = document.getElementById('valLoadedPing');
+
+// Hero Operator Elements
+const heroBrandBadge   = document.getElementById('heroBrandBadge');
+const heroIspTitle     = document.getElementById('heroIspTitle');
+const heroAsn          = document.getElementById('heroAsn');
+const heroIpAddress    = document.getElementById('heroIpAddress');
+const heroLocation     = document.getElementById('heroLocation');
+const heroTech         = document.getElementById('heroTech');
+const footerIp         = document.getElementById('footerIp');
+const footerIsp        = document.getElementById('footerIsp');
+const carrierChips     = [...document.querySelectorAll('.carrier-chip')];
+
+// Mode Switchers
+const modeWire = document.getElementById('modeWire');
+const modePayload = document.getElementById('modePayload');
+
+// Plan Matcher Elements
+const selectPlanSpeed  = document.getElementById('selectPlanSpeed');
+const inputCustomPlan  = document.getElementById('inputCustomPlan');
+const auditDeliveryScore = document.getElementById('auditDeliveryScore');
+const barDeliveryFill  = document.getElementById('barDeliveryFill');
+const auditOverallOAI  = document.getElementById('auditOverallOAI');
+const barOAIFill       = document.getElementById('barOAIFill');
+const auditGradeBadge  = document.getElementById('auditGradeBadge');
+const auditJitterMetric = document.getElementById('auditJitterMetric');
+const barJitterFill    = document.getElementById('barJitterFill');
+const auditJitterVerdict = document.getElementById('auditJitterVerdict');
+const auditVerdictBanner = document.getElementById('auditVerdictBanner');
+const auditPlanSubtext = document.getElementById('auditPlanSubtext');
+const auditCarrierTag  = document.getElementById('auditCarrierTag');
+
+let isTestActive = false;
+let latestTestReport = null;
+
+// Mode Toggle Handlers
+modeWire.onclick = () => {
+  useWireRateCompensation = true;
+  modeWire.classList.add('active');
+  modePayload.classList.remove('active');
+  displayToast('Mode: Physical Wire-Rate (+3.8% TCP/IP Framing Compensation)');
+};
+
+modePayload.onclick = () => {
+  useWireRateCompensation = false;
+  modePayload.classList.add('active');
+  modeWire.classList.remove('active');
+  displayToast('Mode: Raw Uncompensated Application Payload');
+};
+
+// Carrier Switcher Chip click handler
+carrierChips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    carrierChips.forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    
+    const op = chip.dataset.op;
+    if (op === 'auto') {
+      detectUserNetworkOperator();
+    } else {
+      applyCarrierProfile(op);
+    }
+  });
+});
+
+const heroIspFullname = document.getElementById('heroIspFullname');
+const btnGpsLoc       = document.getElementById('btnGpsLoc');
+const gpsBtnTxt       = document.getElementById('gpsBtnTxt');
+
+function applyCarrierProfile(key) {
+  const profile = CARRIER_PROFILES[key] || CARRIER_PROFILES.generic;
+  activeCarrierKey = key;
+  detectedCarrierDetails.badge = profile.badge;
+  detectedCarrierDetails.isp = profile.name;
+  detectedCarrierDetails.fullName = profile.fullName;
+  detectedCarrierDetails.asn = profile.asn;
+  detectedCarrierDetails.color = profile.color;
+
+  heroBrandBadge.textContent = profile.badge;
+  heroBrandBadge.style.background = profile.color;
+  heroBrandBadge.style.boxShadow = `0 4px 15px ${profile.color}55`;
+  heroIspTitle.innerHTML = `${profile.name} <span>Active</span>`;
+  heroIspFullname.innerHTML = `Official Full Form: <strong>${profile.fullName}</strong>`;
+  heroAsn.textContent = `ASN: ${profile.asn}`;
+  heroTech.textContent = profile.tech;
+  auditCarrierTag.textContent = `Carrier: ${profile.badge}`;
+  footerIsp.textContent = `${profile.name} (${profile.asn})`;
+
+  displayToast(`Selected Operator: ${profile.badge} (${profile.fullName})`);
+}
+
+// Precise GPS Location Handler using Browser HTML5 Geolocation API
+async function requestExactGpsLocation(isAuto = false) {
+  if (!navigator.geolocation) {
+    if (!isAuto) displayToast('GPS Geolocation is not supported by your browser.', true);
+    return;
+  }
+
+  const savedGps = localStorage.getItem('speedpulse_gps_location');
+  if (savedGps && isAuto) {
+    heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${savedGps}`;
+    btnGpsLoc.classList.add('verified');
+    gpsBtnTxt.textContent = 'GPS Active';
+  } else {
+    gpsBtnTxt.textContent = 'Locating...';
+    if (!isAuto) displayToast('Requesting GPS device location permission...');
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy || 10);
+
+      try {
+        // Reverse geocoding via OpenStreetMap Nominatim
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+        if (res.ok) {
+          const d = await res.json();
+          const addr = d.address || {};
+          const locality = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district || '';
+          const city = addr.city || addr.town || addr.county || '';
+          const state = addr.state || '';
+          const postcode = addr.postcode ? `PIN: ${addr.postcode}` : '';
+          const country = addr.country || 'India';
+
+          const parts = [locality, city, state, postcode, country].filter(Boolean);
+          const fullAddress = parts.join(', ');
+
+          detectedCarrierDetails.location = fullAddress;
+          heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${fullAddress} <span style="font-size:10px; color:#10b981;">(±${accuracy}m)</span>`;
+          btnGpsLoc.classList.add('verified');
+          gpsBtnTxt.textContent = 'GPS Verified';
+          localStorage.setItem('speedpulse_gps_location', fullAddress);
+          displayToast(`GPS Location Pinpointed: ${city || locality}, ${state}`);
+          return;
+        }
+      } catch (e) {
+        console.warn('Nominatim reverse geocode error, using fallback...', e);
+      }
+
+      // Fallback reverse geocoder
+      try {
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+        if (res.ok) {
+          const d = await res.json();
+          const city = d.city || d.locality || '';
+          const state = d.principalSubdivision || '';
+          const country = d.countryName || '';
+          const fullAddress = `${city ? city + ', ' : ''}${state}, ${country} (GPS Verified)`;
+          
+          detectedCarrierDetails.location = fullAddress;
+          heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${fullAddress}`;
+          btnGpsLoc.classList.add('verified');
+          gpsBtnTxt.textContent = 'GPS Verified';
+          localStorage.setItem('speedpulse_gps_location', fullAddress);
+          displayToast(`GPS Location Pinpointed: ${city}, ${state}`);
+          return;
+        }
+      } catch (_) {}
+
+      heroLocation.textContent = `📍 Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)} (±${accuracy}m)`;
+      gpsBtnTxt.textContent = 'GPS Active';
+    },
+    (err) => {
+      console.warn('Geolocation permission status:', err.message);
+      if (!savedGps) {
+        gpsBtnTxt.textContent = 'Allow GPS';
+      }
+      if (!isAuto) {
+        if (err.code === 1) {
+          displayToast('Location permission denied in browser. Click location lock icon in URL bar to allow.', true);
+        } else {
+          displayToast('Unable to retrieve GPS satellite coordinates.', true);
+        }
+      }
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+  );
+}
+
+btnGpsLoc.onclick = () => requestExactGpsLocation(false);
+
+// Plan select change
+selectPlanSpeed.addEventListener('change', () => {
+  if (selectPlanSpeed.value === 'custom') {
+    inputCustomPlan.style.display = 'inline-block';
+    inputCustomPlan.focus();
+  } else {
+    inputCustomPlan.style.display = 'none';
+  }
+  updatePlanPrompt();
+});
+
+inputCustomPlan.addEventListener('input', updatePlanPrompt);
+
+function getUserPlanMbps() {
+  if (selectPlanSpeed.value === 'custom') {
+    return parseFloat(inputCustomPlan.value) || 100;
+  }
+  return parseFloat(selectPlanSpeed.value) || 100;
+}
+
+function updatePlanPrompt() {
+  const mbps = getUserPlanMbps();
+  auditPlanSubtext.textContent = `vs ${mbps} Mbps Plan`;
+}
+
+// Master GO trigger
+btnMasterStart.addEventListener('click', () => {
+  if (isTestActive) {
+    activeAbortController?.abort();
+    resetUIToReady('Test Cancelled by User');
+  } else {
+    beginSpeedAudit();
+  }
+});
+
+async function beginSpeedAudit() {
+  isTestActive = true;
+  activeAbortController = new AbortController();
+  btnMasterStart.classList.add('running');
+  btnMasterText.textContent = 'STOP';
+  btnShare.style.display = 'none';
+
+  resetAllMetricCards();
+  resetSpeedGauge();
+  setSystemStatus('testing', 'Initializing 100% Precision Engine...');
+
+  const report = {
+    timestamp: new Date().toISOString(),
+    ping: 0, jitter: 0,
+    download: 0, downloadMax: 0,
+    upload: 0, uploadMax: 0,
+    loadedPing: '--',
+    planMbps: getUserPlanMbps(),
+    carrier: detectedCarrierDetails.isp,
+    operatorBadge: detectedCarrierDetails.badge,
+    ip: detectedCarrierDetails.ip,
+    sla: null
+  };
+
+  try {
+    // 1. LATENCY PHASE
+    markPhaseActive('ping');
+    setSystemStatus('testing', `Measuring Idle Ping & Jitter on ${detectedCarrierDetails.badge}...`);
+    setPanelActive('panelPing');
+
+    const pingRes = await executePingPhase(14, (rtt) => {
+      valLatency.textContent = rtt.toFixed(1);
+      updateSpeedGauge(0, 0, 'LATENCY TEST', 'ms');
+    });
+
+    report.ping = pingRes.ping;
+    report.jitter = pingRes.jitter;
+    valLatency.textContent = pingRes.ping.toFixed(1);
+    valJitterMs.textContent = pingRes.jitter.toFixed(1);
+    markPhaseCompleted('ping');
+    setPanelInactive('panelPing');
+
+    // 2. DOWNLOAD PHASE
+    markPhaseActive('dl');
+    setSystemStatus('testing', `Benchmarking ${detectedCarrierDetails.badge} Download (100% Wire-Rate)...`);
+    setPanelActive('panelDownload');
+    setGaugeColorTheme('dl');
+
+    const dlRes = await executeDownloadPhase(({ currentSpeed, peakSpeed }) => {
+      const spd = formatSpeedWithUnit(currentSpeed, userSettings.unit);
+      const pk  = formatSpeedWithUnit(peakSpeed, userSettings.unit);
+      updateSpeedGauge(spd, pk, 'DOWNLOAD', userSettings.unit);
+      valDownloadSpeed.textContent = spd.toFixed(1);
+      valDownloadPeak.textContent  = pk.toFixed(1);
+    });
+
+    report.download = formatSpeedWithUnit(dlRes.speed, userSettings.unit);
+    report.downloadMax = formatSpeedWithUnit(dlRes.peakSpeed, userSettings.unit);
+    report.loadedPing = dlRes.loadedPing;
+    valDownloadSpeed.textContent = report.download.toFixed(2);
+    valDownloadPeak.textContent  = report.downloadMax.toFixed(2);
+    valLoadedPing.textContent    = report.loadedPing;
+    markPhaseCompleted('dl');
+    setPanelInactive('panelDownload');
+
+    // 3. UPLOAD PHASE
+    markPhaseActive('ul');
+    setSystemStatus('testing', `Benchmarking ${detectedCarrierDetails.badge} Upload Bandwidth...`);
+    setPanelActive('panelUpload');
+    setGaugeColorTheme('ul');
+    clearWaveformStream();
+    waveThemeMode = 'ul';
+
+    const ulRes = await executeUploadPhase(({ currentSpeed, peakSpeed }) => {
+      const spd = formatSpeedWithUnit(currentSpeed, userSettings.unit);
+      const pk  = formatSpeedWithUnit(peakSpeed, userSettings.unit);
+      updateSpeedGauge(spd, pk, 'UPLOAD', userSettings.unit);
+      valUploadSpeed.textContent = spd.toFixed(1);
+      valUploadPeak.textContent  = pk.toFixed(1);
+    });
+
+    report.upload = formatSpeedWithUnit(ulRes.speed, userSettings.unit);
+    report.uploadMax = formatSpeedWithUnit(ulRes.peakSpeed, userSettings.unit);
+    valUploadSpeed.textContent = report.upload.toFixed(2);
+    valUploadPeak.textContent  = report.uploadMax.toFixed(2);
+    markPhaseCompleted('ul');
+    setPanelInactive('panelUpload');
+
+    // 4. ISP ACCURACY AUDIT PHASE
+    markPhaseActive('acc');
+    const sla = calculateOperatorSLA(report.download, report.upload, report.ping, report.jitter, report.planMbps);
+    report.sla = sla;
+
+    // Update Audit Card UI
+    auditDeliveryScore.textContent = `${sla.deliveryPercent}%`;
+    barDeliveryFill.style.width = `${Math.min(100, sla.deliveryPercent)}%`;
+    auditOverallOAI.textContent = `${sla.totalOAI} / 100`;
+    barOAIFill.style.width = `${sla.totalOAI}%`;
+    auditGradeBadge.textContent = sla.grade;
+    auditJitterMetric.textContent = sla.jitterRating;
+    barJitterFill.style.width = `${Math.max(10, 100 - report.jitter * 3)}%`;
+    auditJitterVerdict.textContent = sla.statusBadgeText;
+    auditVerdictBanner.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:6px;"></i> ${sla.verdictHtml}`;
+
+    // Overall Carrier Grade Panel
+    valCarrierGrade.textContent = sla.grade.split(' ')[0];
+
+    // Restore download gauge view
+    waveThemeMode = 'dl';
+    setGaugeColorTheme('dl');
+    updateSpeedGauge(report.download, report.downloadMax, 'DOWNLOAD', userSettings.unit);
+
+    setSystemStatus('done', 'Audit Completed Successfully');
+    latestTestReport = report;
+    persistHistory(report);
+    btnShare.style.display = 'inline-flex';
+    displayToast('100% Precision Speed Audit Complete!');
+  } catch (err) {
+    if (err.message !== 'aborted' && !activeAbortController?.signal.aborted) {
+      console.error(err);
+      setSystemStatus('error', 'Error: ' + (err.message || 'Connection lost'));
+      displayToast('Speed test encountered a network issue.', true);
+    }
+  } finally {
+    isTestActive = false;
+    btnMasterStart.classList.remove('running');
+    btnMasterText.textContent = 'RETEST';
+    document.querySelectorAll('.metric-panel').forEach(p => p.classList.remove('highlight-active'));
+  }
+}
+
+function resetUIToReady(msg) {
+  isTestActive = false;
+  btnMasterStart.classList.remove('running');
+  btnMasterText.textContent = 'GO';
+  document.querySelectorAll('.metric-panel').forEach(p => p.classList.remove('highlight-active'));
+  if (msg) setSystemStatus('ready', msg);
+}
+
+function setSystemStatus(stateClass, labelText) {
+  mainStatusBadge.className = `status-badge ${stateClass}`;
+  mainStatusText.textContent = labelText;
+}
+
+function markPhaseActive(stepKey) {
+  phaseNodeList.forEach(node => {
+    if (node.dataset.step === stepKey) node.className = 'phase-node active';
+    else if (node.classList.contains('done')) node.className = 'phase-node done';
+    else node.className = 'phase-node';
+  });
+}
+
+function markPhaseCompleted(stepKey) {
+  const node = phaseNodeList.find(n => n.dataset.step === stepKey);
+  if (node) node.className = 'phase-node done';
+}
+
+function setPanelActive(id) { document.getElementById(id)?.classList.add('highlight-active'); }
+function setPanelInactive(id) { document.getElementById(id)?.classList.remove('highlight-active'); }
+
+function resetAllMetricCards() {
+  valLatency.textContent = '--';
+  valJitterMs.textContent = '--';
+  valDownloadSpeed.textContent = '--';
+  valDownloadPeak.textContent = '--';
+  valUploadSpeed.textContent = '--';
+  valUploadPeak.textContent = '--';
+  valCarrierGrade.textContent = '--';
+  valLoadedPing.textContent = '--';
+  phaseNodeList.forEach((n, i) => n.className = 'phase-node' + (i === 0 ? ' active' : ''));
+}
+
+/* ==========================================================================
+   INTELLIGENT OPERATOR RESOLUTION & AUTO-DETECTION
+   ========================================================================== */
+function parseOperatorBrand(rawString, asnString) {
+  const combined = `${rawString} ${asnString}`.toLowerCase();
+
+  if (/thamizhaga|tic fibre|tic broadband|as133982|as137087/i.test(combined)) {
+    return { key: 'tic', profile: CARRIER_PROFILES.tic };
+  }
+  if (/bsnl|bharat sanchar|as9829|as24186/i.test(combined)) {
+    return { key: 'bsnl', profile: CARRIER_PROFILES.bsnl };
+  }
+  if (/jio|reliance|as55836|as45271/i.test(combined)) {
+    return { key: 'jio', profile: CARRIER_PROFILES.jio };
+  }
+  if (/airtel|bharti|as45609|as9498/i.test(combined)) {
+    return { key: 'airtel', profile: CARRIER_PROFILES.airtel };
+  }
+  if (/act|atria|beam|as24309/i.test(combined)) {
+    return { key: 'act', profile: CARRIER_PROFILES.act };
+  }
+  if (/tata|tataplay|tatasky|vsnl|as4755|as18101/i.test(combined)) {
+    return { key: 'tata', profile: CARRIER_PROFILES.tata };
+  }
+  if (/vodafone|idea|vi|as55410|as17540/i.test(combined)) {
+    return { key: 'vi', profile: CARRIER_PROFILES.vi };
+  }
+
+  const cleanName = rawString.replace(/(Limited|Pvt|Corp|Inc|LLC|GmbH)/gi, '').trim() || 'Broadband ISP';
+  return {
+    key: 'generic',
+    profile: {
+      badge: cleanName.split(' ')[0].toUpperCase() || 'CARRIER',
+      name: cleanName,
+      fullName: cleanName,
+      asn: asnString || 'AS-Verified',
+      color: '#00f0ff',
+      tech: 'High-Speed Broadband'
+    }
+  };
+}
+
+// Global JSONP Callback handler for guaranteed zero-CORS IP/ISP detection
+window.onIpApiResolved = function(d) {
+  if (d && d.status === 'success') {
+    applyDetectedNetworkOperator(
+      d.isp || d.org || d.as || '',
+      d.as || '',
+      d.query || '',
+      `${d.city || ''}, ${d.regionName || d.country || ''}`
+    );
+  }
+};
+
+window.onIpApiCoResolved = function(d) {
+  if (d && d.ip) {
+    applyDetectedNetworkOperator(
+      d.org || d.isp || '',
+      d.asn || '',
+      d.ip || '',
+      `${d.city || ''}, ${d.region || d.country_name || ''}`
+    );
+  }
+};
+
+function applyDetectedNetworkOperator(ispRaw, asnRaw, ipRaw, locRaw) {
+  if (!ispRaw && !asnRaw && !ipRaw) return;
+
+  const resolved = parseOperatorBrand(ispRaw, asnRaw);
+  const savedGps = localStorage.getItem('speedpulse_gps_location');
+  
+  detectedCarrierDetails = {
+    isp: resolved.profile.name,
+    fullName: resolved.profile.fullName || resolved.profile.name,
+    ip: ipRaw || detectedCarrierDetails.ip,
+    asn: asnRaw || resolved.profile.asn,
+    location: savedGps || ((locRaw && locRaw.trim() !== ',') ? locRaw.trim().replace(/^,|,$/g, '').trim() : 'India'),
+    badge: resolved.profile.badge,
+    color: resolved.profile.color
+  };
+
+  heroBrandBadge.textContent = resolved.profile.badge;
+  heroBrandBadge.style.background = resolved.profile.color;
+  heroBrandBadge.style.boxShadow = `0 4px 15px ${resolved.profile.color}55`;
+  heroIspTitle.innerHTML = `${resolved.profile.name} <span>Active</span>`;
+  if (heroIspFullname) {
+    heroIspFullname.innerHTML = `Official Full Form: <strong>${resolved.profile.fullName || resolved.profile.name}</strong>`;
+  }
+  heroAsn.textContent = `ASN: ${detectedCarrierDetails.asn}`;
+  heroIpAddress.textContent = `IP: ${detectedCarrierDetails.ip}`;
+  
+  if (savedGps) {
+    heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${savedGps}`;
+    btnGpsLoc.classList.add('verified');
+    gpsBtnTxt.textContent = 'GPS Active';
+  } else {
+    heroLocation.textContent = `Location: ${detectedCarrierDetails.location}`;
+  }
+
+  heroTech.textContent = resolved.profile.tech;
+  auditCarrierTag.textContent = `Carrier: ${resolved.profile.badge}`;
+  footerIp.textContent = detectedCarrierDetails.ip;
+  footerIsp.textContent = `${resolved.profile.name} (${detectedCarrierDetails.asn})`;
+
+  carrierChips.forEach(chip => {
+    if (chip.dataset.op === resolved.key) {
+      carrierChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+  });
+
+  console.log('✅ Network Operator Auto-Detected:', resolved.profile.badge, '| Full Name:', resolved.profile.fullName, '| IP:', ipRaw);
+}
+
+async function detectUserNetworkOperator() {
+  heroIspTitle.innerHTML = `Detecting <span>Network Carrier...</span>`;
+  heroBrandBadge.textContent = 'DETECTING';
+
+  // 1. Method 1: freeipapi.com (High reliability open CORS API)
+  try {
+    const res = await fetch('https://freeipapi.com/api/json');
+    if (res.ok) {
+      const d = await res.json();
+      if (d && (d.asnOrganization || d.ipAddress)) {
+        const ispStr = d.asnOrganization || d.cityName || '';
+        const asnStr = d.asn ? `AS${d.asn}` : '';
+        const ipStr = d.ipAddress || '';
+        const locStr = `${d.cityName || ''}, ${d.regionName || d.countryName || ''}`;
+        applyDetectedNetworkOperator(ispStr, asnStr, ipStr, locStr);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('freeipapi failed, attempting JSONP fallback...', e);
+  }
+
+  // 2. Method 2: JSONP script injection to ip-api.com (100% bypasses CORS in all browsers)
+  try {
+    const script = document.createElement('script');
+    script.src = 'http://ip-api.com/json/?fields=status,message,country,regionName,city,isp,org,as,query&callback=onIpApiResolved&_=' + Date.now();
+    script.onerror = () => {
+      // If HTTP is blocked on HTTPS, try HTTPS JSONP
+      const scriptHttps = document.createElement('script');
+      scriptHttps.src = 'https://ipapi.co/jsonp/?callback=onIpApiCoResolved&_=' + Date.now();
+      document.head.appendChild(scriptHttps);
+    };
+    document.head.appendChild(script);
+  } catch (e) {
+    console.warn('JSONP injection error:', e);
+  }
+
+  // 3. Method 3: api.db-ip.com + ipify
+  try {
+    const res = await fetch('https://api.db-ip.com/v2/free/self');
+    if (res.ok) {
+      const d = await res.json();
+      if (d && d.ipAddress) {
+        applyDetectedNetworkOperator(d.stateProv || d.countryName, '', d.ipAddress, `${d.city || ''}, ${d.stateProv || d.countryName || ''}`);
+      }
+    }
+  } catch (_) {}
+}
+
+/* ==========================================================================
+   HISTORY & LOCALSTORAGE PERSISTENCE
+   ========================================================================== */
+function fetchStoredHistory() {
+  try { return JSON.parse(localStorage.getItem('speedpulse_extreme_records') || '[]'); } catch (_) { return []; }
+}
+
+function persistHistory(record) {
+  const list = fetchStoredHistory();
+  list.unshift(record);
+  if (list.length > 50) list.pop();
+  localStorage.setItem('speedpulse_extreme_records', JSON.stringify(list));
+  refreshHistoryTable();
+}
+
+function refreshHistoryTable() {
+  const records = fetchStoredHistory();
+  const tbody = document.getElementById('historyTableRows');
+  if (!tbody) return;
+
+  if (!records.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">No tests recorded yet. Run your first speed test!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = records.map(item => {
+    const d = new Date(item.timestamp);
+    const dateFormatted = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    const accuracyBadge = item.sla ? `${item.sla.deliveryPercent}% (${item.sla.grade.split(' ')[0]})` : '--';
+    return `
+      <tr>
+        <td>${dateFormatted}</td>
+        <td><strong style="color: var(--accent-cyan);">${item.operatorBadge || 'JIO'}</strong></td>
+        <td><strong style="color: #00f0ff;">${item.download}</strong> Mbps</td>
+        <td><strong style="color: #f43f5e;">${item.upload}</strong> Mbps</td>
+        <td>${item.ping} ms</td>
+        <td><strong style="color: #10b981;">${accuracyBadge}</strong></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ==========================================================================
+   MODAL CONTROLLERS & EVENT LISTENERS
+   ========================================================================== */
+function showModal(id) { document.getElementById(id)?.classList.add('open'); }
+function hideModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+document.getElementById('btnLeaderboard').onclick = () => showModal('leaderboardModal');
+document.getElementById('btnHistory').onclick     = () => { refreshHistoryTable(); showModal('historyModal'); };
+document.getElementById('btnSettings').onclick    = () => showModal('settingsModal');
+
+document.getElementById('btnShare').onclick = () => {
+  if (!latestTestReport) return;
+  document.getElementById('certDownloadVal').textContent = latestTestReport.download;
+  document.getElementById('certUploadVal').textContent   = latestTestReport.upload;
+  document.getElementById('certLatencyVal').textContent  = latestTestReport.ping;
+  document.getElementById('certOperatorVal').textContent = latestTestReport.operatorBadge;
+  document.getElementById('certAccuracyVal').textContent = latestTestReport.sla ? `${latestTestReport.sla.deliveryPercent}%` : '--%';
+  document.getElementById('certTimestamp').textContent   = new Date(latestTestReport.timestamp).toLocaleString();
+  showModal('shareModal');
+};
+
+document.querySelectorAll('.close-modal-btn').forEach(btn => {
+  btn.onclick = () => hideModal(btn.dataset.close);
+});
+
+['leaderboardModal', 'historyModal', 'settingsModal', 'shareModal'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) hideModal(id);
+  });
+});
+
+document.getElementById('btnSaveConfig').onclick = () => {
+  userSettings = {
+    concurrency: parseInt(document.getElementById('cfgConcurrency').value),
+    duration: parseInt(document.getElementById('cfgDuration').value),
+    unit: document.getElementById('cfgUnit').value
+  };
+  localStorage.setItem('speedpulse_extreme_cfg', JSON.stringify(userSettings));
+  hideModal('settingsModal');
+  displayToast('Preferences saved successfully!');
+};
+
+document.getElementById('btnClearHistory').onclick = () => {
+  if (confirm('Are you sure you want to clear your speed test history?')) {
+    localStorage.removeItem('speedpulse_extreme_records');
+    refreshHistoryTable();
+    displayToast('History cleared.');
+  }
+};
+
+document.getElementById('btnExportCsv').onclick = () => {
+  const data = fetchStoredHistory();
+  if (!data.length) { alert('No history data to export.'); return; }
+  const headers = ['Timestamp', 'Operator', 'Download_Mbps', 'Upload_Mbps', 'Latency_ms', 'Jitter_ms', 'Plan_Mbps', 'Accuracy_Percent', 'Grade'];
+  const rows = data.map(d => [
+    d.timestamp, d.operatorBadge || '', d.download, d.upload, d.ping, d.jitter, d.planMbps, d.sla?.deliveryPercent || '', `"${d.sla?.grade || ''}"`
+  ]);
+  const csvStr = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `speed_plus_audit_${Date.now()}.csv`;
+  a.click();
+};
+
+document.getElementById('btnCopySummary').onclick = () => {
+  if (!latestTestReport) return;
+  const summary = `⚡ Speed+ — 100% Precision Speed & Accuracy Audit
+📡 Network Operator: ${latestTestReport.operatorBadge} (${latestTestReport.carrier})
+🌐 IP Address: ${latestTestReport.ip}
+📥 Download: ${latestTestReport.download} Mbps (Peak: ${latestTestReport.downloadMax} Mbps)
+📤 Upload: ${latestTestReport.upload} Mbps (Peak: ${latestTestReport.uploadMax} Mbps)
+⏱️ Idle Latency: ${latestTestReport.ping} ms | Jitter: ${latestTestReport.jitter} ms | Loaded Latency: ${latestTestReport.loadedPing} ms
+🎯 Plan Accuracy: ${latestTestReport.sla?.deliveryPercent}% vs ${latestTestReport.planMbps} Mbps Plan
+🏆 Grade: ${latestTestReport.sla?.grade}
+Audited on: ${new Date(latestTestReport.timestamp).toLocaleString()}`;
+
+  navigator.clipboard.writeText(summary).then(() => displayToast('Speed+ summary copied to clipboard!'));
+};
+
+function displayToast(msg, isErr = false) {
+  const box = document.getElementById('toastBox');
+  box.textContent = msg;
+  box.style.background = isErr ? '#f43f5e' : '#10b981';
+  box.classList.add('show');
+  setTimeout(() => box.classList.remove('show'), 2800);
+}
+
+// Initial Boot Sequence
+detectUserNetworkOperator();
+refreshHistoryTable();
+updatePlanPrompt();
+
+// Automatically prompt user for GPS location permission immediately on entering the site
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    requestExactGpsLocation(true);
+  }, 350);
+});
+
+// Also trigger immediately if script runs after DOMContentLoaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(() => {
+    requestExactGpsLocation(true);
+  }, 350);
+}
+</script>
+</body>
+</html>
