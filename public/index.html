@@ -1582,16 +1582,13 @@ table.data-table tr:hover td {
       </div>
 
       <div class="nav-actions">
-        <button class="btn-nav-pill" id="btnFirebaseModal" title="Configure Firebase Cloud Storage">
-          <i class="fa-solid fa-fire" style="color:#f97316;"></i> <span>Firebase Cloud</span>
-        </button>
         <button class="btn-nav-icon" id="btnLeaderboard" title="Network Operator Leaderboard">
           <i class="fa-solid fa-trophy"></i>
         </button>
         <button class="btn-nav-icon" id="btnHistory" title="Speed Test History">
           <i class="fa-solid fa-clock-rotate-left"></i>
         </button>
-        <button class="btn-nav-icon" id="btnSettings" title="Engine Settings & Preferences">
+        <button class="btn-nav-icon" id="btnSettings" title="Engine Settings & Cloud Preferences">
           <i class="fa-solid fa-gear"></i>
         </button>
         <button class="btn-nav-icon" id="btnShare" title="Share Verified Result" style="display:none;">
@@ -2068,46 +2065,6 @@ table.data-table tr:hover td {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FIREBASE CLOUD STORAGE MODAL -->
-  <div class="modal-overlay" id="firebaseModal">
-    <div class="modal-box">
-      <div class="modal-head">
-        <h2><i class="fa-solid fa-fire" style="color:#f97316;"></i> Firebase Cloud Storage</h2>
-        <button class="close-modal-btn" data-close="firebaseModal"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-content-body">
-        <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.35); border-radius: 8px; padding: 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
-          <strong style="color: #f97316; display:block; margin-bottom:4px;"><i class="fa-solid fa-cloud-arrow-up"></i> Real-time Cloud Data Sync</strong>
-          Sync your speed test results, latency SLA, operator accuracy grade, and exact location to Firebase Cloud Firestore.
-        </div>
-
-        <div class="form-field" style="margin-top: 14px;">
-          <label>Cloud Firestore Status</label>
-          <div style="display:flex; align-items:center; gap: 10px;">
-            <input type="checkbox" id="fbToggleMain" checked style="width:20px; height:20px; accent-color: #f97316; cursor:pointer;" />
-            <span style="font-size: 13px; color: var(--text-primary); font-weight:700;">Enable Automatic Cloud Sync</span>
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label>Firebase Project ID</label>
-          <input type="text" id="fbProjectIdMain" class="input-control" placeholder="e.g. speedplus-23ef3" value="speedplus-23ef3" />
-          <small>Project ID linked: speedplus-23ef3 (console.firebase.google.com)</small>
-        </div>
-
-        <div class="form-field">
-          <label>Firebase Web API Key (Optional)</label>
-          <input type="password" id="fbApiKeyMain" class="input-control" placeholder="e.g. AIzaSyD..." />
-          <small>Find your Web API Key under Firebase Web App Settings</small>
-        </div>
-
-        <button class="btn-primary-action" id="btnSaveFirebaseMain" style="background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Save & Activate Firebase Storage
-        </button>
       </div>
     </div>
   </div>
@@ -3527,35 +3484,16 @@ function hideModal(id) { document.getElementById(id)?.classList.remove('open'); 
 
 document.getElementById('btnLeaderboard').onclick = () => showModal('leaderboardModal');
 document.getElementById('btnHistory').onclick     = () => { refreshHistoryTable(); showModal('historyModal'); };
-document.getElementById('btnSettings').onclick    = () => showModal('settingsModal');
-document.getElementById('btnFirebaseModal').onclick= () => {
-  const fbProjId = document.getElementById('fbProjectIdMain');
-  const fbApiKey = document.getElementById('fbApiKeyMain');
-  const fbToggle = document.getElementById('fbToggleMain');
+document.getElementById('btnSettings').onclick    = () => {
+  const fbProjId = document.getElementById('cfgFirebaseProjectId');
+  const fbApiKey = document.getElementById('cfgFirebaseApiKey');
+  const fbToggle = document.getElementById('cfgFirebaseToggle');
   if (fbProjId) {
-    fbProjId.value = localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud';
+    fbProjId.value = localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-23ef3';
     fbApiKey.value = localStorage.getItem('speedplus_firebase_apikey') || '';
     fbToggle.checked = localStorage.getItem('speedplus_firebase_enabled') !== 'false';
   }
-  showModal('firebaseModal');
-};
-
-document.getElementById('btnSaveFirebaseMain').onclick = () => {
-  const fbProjId = document.getElementById('fbProjectIdMain').value.trim();
-  const fbApiKey = document.getElementById('fbApiKeyMain').value.trim();
-  const fbToggle = document.getElementById('fbToggleMain').checked;
-
-  localStorage.setItem('speedplus_firebase_projectid', fbProjId || 'speedplus-cloud');
-  localStorage.setItem('speedplus_firebase_apikey', fbApiKey);
-  localStorage.setItem('speedplus_firebase_enabled', fbToggle ? 'true' : 'false');
-  window.firebaseCloudEnabled = fbToggle;
-
-  if (typeof window.initFirebaseCloud === 'function') {
-    window.initFirebaseCloud();
-  }
-
-  hideModal('firebaseModal');
-  displayToast(`🔥 Firebase Project "${fbProjId || 'speedplus-cloud'}" Activated!`);
+  showModal('settingsModal');
 };
 
 document.getElementById('btnShare').onclick = () => {
@@ -3573,7 +3511,7 @@ document.querySelectorAll('.close-modal-btn').forEach(btn => {
   btn.onclick = () => hideModal(btn.dataset.close);
 });
 
-['leaderboardModal', 'historyModal', 'settingsModal', 'shareModal', 'firebaseModal'].forEach(id => {
+['leaderboardModal', 'historyModal', 'settingsModal', 'shareModal'].forEach(id => {
   document.getElementById(id)?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) hideModal(id);
   });
@@ -3586,8 +3524,24 @@ document.getElementById('btnSaveConfig').onclick = () => {
     unit: document.getElementById('cfgUnit').value
   };
   localStorage.setItem('speedpulse_extreme_cfg', JSON.stringify(userSettings));
+
+  const fbProjId = document.getElementById('cfgFirebaseProjectId')?.value.trim();
+  const fbApiKey = document.getElementById('cfgFirebaseApiKey')?.value.trim();
+  const fbToggle = document.getElementById('cfgFirebaseToggle')?.checked;
+
+  if (fbProjId !== undefined) {
+    localStorage.setItem('speedplus_firebase_projectid', fbProjId || 'speedplus-23ef3');
+    localStorage.setItem('speedplus_firebase_apikey', fbApiKey || '');
+    localStorage.setItem('speedplus_firebase_enabled', fbToggle ? 'true' : 'false');
+    window.firebaseCloudEnabled = fbToggle;
+
+    if (typeof window.initFirebaseCloud === 'function') {
+      window.initFirebaseCloud();
+    }
+  }
+
   hideModal('settingsModal');
-  displayToast('Preferences saved successfully!');
+  displayToast('Preferences & Cloud Storage Settings Saved!');
 };
 
 document.getElementById('btnClearHistory').onclick = () => {
