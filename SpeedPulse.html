@@ -2084,7 +2084,28 @@ table.data-table tr:hover td {
           </select>
         </div>
 
-        <button class="btn-primary-action" id="btnSaveConfig"><i class="fa-solid fa-check"></i> Save Preferences</button>
+        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 16px 0;" />
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
+          <div>
+            <strong style="color: var(--accent-cyan); font-size: 13px;"><i class="fa-solid fa-cloud"></i> Firebase Cloud Storage</strong>
+            <div style="font-size: 11px; color: var(--text-muted);">Sync speed audits globally to Firebase Cloud Firestore</div>
+          </div>
+          <input type="checkbox" id="cfgFirebaseToggle" checked style="accent-color: var(--accent-cyan); width:18px; height:18px; cursor:pointer;" />
+        </div>
+
+        <div id="firebaseConfigBox" style="background: rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius: 8px; padding: 12px; display:flex; flex-direction:column; gap:8px;">
+          <div class="form-field" style="margin:0;">
+            <label style="font-size:11px;">Firebase Project ID</label>
+            <input type="text" id="cfgFirebaseProjectId" class="input-control" placeholder="speedplus-app" value="speedplus-cloud" style="font-size:12px; padding:6px 10px;" />
+          </div>
+          <div class="form-field" style="margin:0;">
+            <label style="font-size:11px;">Firebase API Key (Optional)</label>
+            <input type="password" id="cfgFirebaseApiKey" class="input-control" placeholder="AIzaSy..." style="font-size:12px; padding:6px 10px;" />
+          </div>
+        </div>
+
+        <button class="btn-primary-action" id="btnSaveConfig" style="margin-top: 14px;"><i class="fa-solid fa-check"></i> Save Preferences & Cloud Settings</button>
       </div>
     </div>
   </div>
@@ -3398,6 +3419,11 @@ function persistHistory(record) {
   if (list.length > 50) list.pop();
   localStorage.setItem('speedpulse_extreme_records', JSON.stringify(list));
   refreshHistoryTable();
+
+  // Save audit data to Firebase Cloud Firestore
+  if (typeof window.saveAuditToFirebaseCloud === 'function') {
+    window.saveAuditToFirebaseCloud(record);
+  }
 }
 
 function refreshHistoryTable() {
@@ -3534,6 +3560,53 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
     requestExactGpsLocation(true);
   }, 350);
 }
+</script>
+
+<!-- Firebase Cloud Firestore Integration (v10 SDK) -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+  let db = null;
+  window.firebaseCloudEnabled = localStorage.getItem('speedplus_firebase_enabled') !== 'false';
+
+  function initFirebaseCloud() {
+    const userProjectId = localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud';
+    const userApiKey = localStorage.getItem('speedplus_firebase_apikey') || '';
+    
+    const firebaseConfig = {
+      apiKey: userApiKey || "AIzaSyDemoKeySpeedPlusCloud100PctPrecision",
+      authDomain: `${userProjectId}.firebaseapp.com`,
+      projectId: userProjectId,
+      storageBucket: `${userProjectId}.appspot.com`,
+      messagingSenderId: "100000000000",
+      appId: "1:100000000000:web:speedpluscloud"
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      console.log('🔥 Firebase Cloud Firestore Storage Active:', userProjectId);
+    } catch (err) {
+      console.warn('Firebase init:', err);
+    }
+  }
+
+  window.saveAuditToFirebaseCloud = async function(record) {
+    if (!db || !window.firebaseCloudEnabled) return;
+    try {
+      const docRef = await addDoc(collection(db, "speed_audits"), {
+        ...record,
+        createdAt: serverTimestamp(),
+        clientAgent: 'Speed+ v2.4 Enterprise'
+      });
+      console.log("🔥 Audit Record Saved to Firebase Cloud Firestore. Doc ID:", docRef.id);
+    } catch (e) {
+      console.warn("Cloud Firestore save queued/offline:", e);
+    }
+  };
+
+  initFirebaseCloud();
 </script>
 </body>
 </html>
