@@ -2069,6 +2069,28 @@ table.data-table tr:hover td {
     </div>
   </div>
 
+  <!-- LOCATION PERMISSION PROMPT MODAL -->
+  <div class="modal-overlay" id="locationPromptModal">
+    <div class="modal-box" style="max-width: 440px; text-align: center; border: 1px solid rgba(0, 240, 255, 0.3); box-shadow: 0 10px 40px rgba(0, 240, 255, 0.15);">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(0, 240, 255, 0.12); border: 2px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; color: var(--accent-cyan); box-shadow: 0 0 24px rgba(0, 240, 255, 0.4);">
+        <i class="fa-solid fa-location-crosshairs"></i>
+      </div>
+      <h2 style="font-size: 20px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">Enable Location Access</h2>
+      <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 22px;">
+        Speed+ requires device location permission to pinpoint your exact city, district, and network operator in <strong>English</strong>.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn-primary-action" id="btnAllowLocationNow" style="width: 100%; justify-content: center; font-size: 14px; padding: 13px; border-radius: 10px;">
+          <i class="fa-solid fa-location-arrow"></i> Allow Location Access (English)
+        </button>
+        <button class="btn-sec-action" id="btnSkipLocationPrompt" style="width: 100%; justify-content: center; font-size: 12px; border-radius: 10px; color: var(--text-muted);">
+          Skip & Use Approximate IP Location
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SETTINGS MODAL -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
@@ -2967,7 +2989,13 @@ function applyCarrierProfile(key) {
   displayToast(`Selected Operator: ${profile.badge} (${profile.fullName})`);
 }
 
-// Precise GPS Location Handler using Browser HTML5 Geolocation API
+function cleanEnglishText(text) {
+  if (!text) return '';
+  // Remove non-Latin scripts (e.g. Tamil characters \u0B80-\u0BFF) and return clean English text
+  return String(text).replace(/[\u0B80-\u0BFF]/g, '').replace(/[^\x00-\x7F]/g, '').trim();
+}
+
+// Precise GPS Location Handler using Browser HTML5 Geolocation API (Strict English Output)
 async function requestExactGpsLocation(isAuto = false) {
   if (!navigator.geolocation) {
     if (!isAuto) displayToast('GPS Geolocation is not supported by your browser.', true);
@@ -2976,7 +3004,8 @@ async function requestExactGpsLocation(isAuto = false) {
 
   const savedGps = localStorage.getItem('speedpulse_gps_location');
   if (savedGps && isAuto) {
-    heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${savedGps}`;
+    const cleanGps = cleanEnglishText(savedGps) || savedGps;
+    heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${cleanGps}`;
     btnGpsLoc.classList.add('verified');
     gpsBtnTxt.textContent = 'GPS Active';
   } else {
@@ -2991,16 +3020,16 @@ async function requestExactGpsLocation(isAuto = false) {
       const accuracy = Math.round(position.coords.accuracy || 10);
 
       try {
-        // Reverse geocoding via OpenStreetMap Nominatim
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+        // Reverse geocoding via OpenStreetMap Nominatim forced to English ONLY
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=en`);
         if (res.ok) {
           const d = await res.json();
           const addr = d.address || {};
-          const locality = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district || '';
-          const city = addr.city || addr.town || addr.county || '';
-          const state = addr.state || '';
+          const locality = cleanEnglishText(addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district || '');
+          const city = cleanEnglishText(addr.city || addr.town || addr.county || '');
+          const state = cleanEnglishText(addr.state || '');
           const postcode = addr.postcode ? `PIN: ${addr.postcode}` : '';
-          const country = addr.country || 'India';
+          const country = cleanEnglishText(addr.country || 'India');
 
           const parts = [locality, city, state, postcode, country].filter(Boolean);
           const fullAddress = parts.join(', ');
@@ -3017,14 +3046,14 @@ async function requestExactGpsLocation(isAuto = false) {
         console.warn('Nominatim reverse geocode error, using fallback...', e);
       }
 
-      // Fallback reverse geocoder
+      // Fallback reverse geocoder forced to English ONLY
       try {
         const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
         if (res.ok) {
           const d = await res.json();
-          const city = d.city || d.locality || '';
-          const state = d.principalSubdivision || '';
-          const country = d.countryName || '';
+          const city = cleanEnglishText(d.city || d.locality || '');
+          const state = cleanEnglishText(d.principalSubdivision || '');
+          const country = cleanEnglishText(d.countryName || '');
           const fullAddress = `${city ? city + ', ' : ''}${state}, ${country} (GPS Verified)`;
           
           detectedCarrierDetails.location = fullAddress;
@@ -3511,7 +3540,16 @@ document.querySelectorAll('.close-modal-btn').forEach(btn => {
   btn.onclick = () => hideModal(btn.dataset.close);
 });
 
-['leaderboardModal', 'historyModal', 'settingsModal', 'shareModal'].forEach(id => {
+document.getElementById('btnAllowLocationNow').onclick = () => {
+  hideModal('locationPromptModal');
+  requestExactGpsLocation(false);
+};
+
+document.getElementById('btnSkipLocationPrompt').onclick = () => {
+  hideModal('locationPromptModal');
+};
+
+['leaderboardModal', 'historyModal', 'settingsModal', 'shareModal', 'locationPromptModal'].forEach(id => {
   document.getElementById(id)?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) hideModal(id);
   });
@@ -3596,18 +3634,23 @@ detectUserNetworkOperator();
 refreshHistoryTable();
 updatePlanPrompt();
 
-// Automatically prompt user for GPS location permission immediately on entering the site
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
+function checkAndShowLocationPrompt() {
+  const savedGps = localStorage.getItem('speedpulse_gps_location');
+  if (!savedGps) {
+    showModal('locationPromptModal');
+  } else {
     requestExactGpsLocation(true);
-  }, 350);
+  }
+}
+
+// Automatically prompt user for GPS location permission modal immediately on entering the site
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(checkAndShowLocationPrompt, 400);
 });
 
 // Also trigger immediately if script runs after DOMContentLoaded
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  setTimeout(() => {
-    requestExactGpsLocation(true);
-  }, 350);
+  setTimeout(checkAndShowLocationPrompt, 400);
 }
 </script>
 
