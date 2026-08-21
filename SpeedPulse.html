@@ -790,7 +790,7 @@ svg.gauge-svg {
 /* Cyber Needle */
 #needleAssembly {
   transform-origin: 180px 180px;
-  transition: transform 0.14s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.8));
 }
 
@@ -2324,9 +2324,33 @@ function setMeterStyle(style) {
   });
 }
 
+const GAUGE_SCALE_POINTS = [
+  { speed: 0,    progress: 0.00 },
+  { speed: 1,    progress: 0.10 },
+  { speed: 5,    progress: 0.22 },
+  { speed: 10,   progress: 0.34 },
+  { speed: 50,   progress: 0.50 },
+  { speed: 100,  progress: 0.64 },
+  { speed: 250,  progress: 0.78 },
+  { speed: 500,  progress: 0.90 },
+  { speed: 1000, progress: 1.00 }
+];
+
 function speedToArcProgress(speed) {
-  if (speed <= 0) return 0;
-  return Math.min(1.0, Math.log10(speed + 1) / Math.log10(1001));
+  if (!speed || speed <= 0) return 0;
+  if (speed >= 1000) return 1.0;
+
+  for (let i = 0; i < GAUGE_SCALE_POINTS.length - 1; i++) {
+    const p1 = GAUGE_SCALE_POINTS[i];
+    const p2 = GAUGE_SCALE_POINTS[i + 1];
+
+    if (speed >= p1.speed && speed <= p2.speed) {
+      const ratio = (speed - p1.speed) / (p2.speed - p1.speed);
+      return p1.progress + ratio * (p2.progress - p1.progress);
+    }
+  }
+
+  return 1.0;
 }
 
 const TOTAL_SEGMENTS = 36;
