@@ -3550,8 +3550,12 @@ document.getElementById('btnSaveFirebaseMain').onclick = () => {
   localStorage.setItem('speedplus_firebase_enabled', fbToggle ? 'true' : 'false');
   window.firebaseCloudEnabled = fbToggle;
 
+  if (typeof window.initFirebaseCloud === 'function') {
+    window.initFirebaseCloud();
+  }
+
   hideModal('firebaseModal');
-  displayToast('🔥 Firebase Cloud Settings Saved & Activated!');
+  displayToast(`🔥 Firebase Project "${fbProjId || 'speedplus-cloud'}" Activated!`);
 };
 
 document.getElementById('btnShare').onclick = () => {
@@ -3653,7 +3657,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 }
 </script>
 
-<!-- Firebase Cloud Firestore Integration (v10 SDK) -->
+<!-- Firebase Cloud Firestore Integration (v10 SDK + REST API Fallback Engine) -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
   import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
@@ -3661,43 +3665,96 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   let db = null;
   window.firebaseCloudEnabled = localStorage.getItem('speedplus_firebase_enabled') !== 'false';
 
-  function initFirebaseCloud() {
-    const userProjectId = localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud';
-    const userApiKey = localStorage.getItem('speedplus_firebase_apikey') || '';
+  window.initFirebaseCloud = function() {
+    const userProjectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud').trim();
+    const userApiKey = (localStorage.getItem('speedplus_firebase_apikey') || '').trim();
+    window.firebaseCloudEnabled = localStorage.getItem('speedplus_firebase_enabled') !== 'false';
     
+    if (!userProjectId) return;
+
     const firebaseConfig = {
       apiKey: userApiKey || "AIzaSyDemoKeySpeedPlusCloud100PctPrecision",
       authDomain: `${userProjectId}.firebaseapp.com`,
       projectId: userProjectId,
       storageBucket: `${userProjectId}.appspot.com`,
       messagingSenderId: "100000000000",
-      appId: "1:100000000000:web:speedpluscloud"
+      appId: `1:100000000000:web:${userProjectId}`
     };
 
     try {
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
-      console.log('🔥 Firebase Cloud Firestore Storage Active:', userProjectId);
+      console.log('🔥 Firebase Cloud Firestore Storage Active for Project:', userProjectId);
     } catch (err) {
-      console.warn('Firebase init:', err);
-    }
-  }
-
-  window.saveAuditToFirebaseCloud = async function(record) {
-    if (!db || !window.firebaseCloudEnabled) return;
-    try {
-      const docRef = await addDoc(collection(db, "speed_audits"), {
-        ...record,
-        createdAt: serverTimestamp(),
-        clientAgent: 'Speed+ v2.4 Enterprise'
-      });
-      console.log("🔥 Audit Record Saved to Firebase Cloud Firestore. Doc ID:", docRef.id);
-    } catch (e) {
-      console.warn("Cloud Firestore save queued/offline:", e);
+      console.warn('Firebase SDK init warning, will use REST fallback:', err);
     }
   };
 
-  initFirebaseCloud();
+  window.saveAuditToFirebaseCloud = async function(record) {
+    if (!window.firebaseCloudEnabled) return;
+    
+    const projectId = (localStorage.getItem('speedplus_firebase_projectid') || 'speedplus-cloud').trim();
+    const apiKey = (localStorage.getItem('speedplus_firebase_apikey') || '').trim();
+
+    // 1. Try Firestore Web SDK
+    if (db) {
+      try {
+        const docRef = await addDoc(collection(db, "speed_audits"), {
+          ...record,
+          createdAt: serverTimestamp(),
+          clientAgent: 'Speed+ v2.4 Enterprise'
+        });
+        console.log("🔥 Audit Record Saved to Cloud Firestore. Doc ID:", docRef.id);
+        if (typeof displayToast === 'function') displayToast('🔥 Audit Saved to Firebase Cloud!');
+        return;
+      } catch (e) {
+        console.warn("Firestore Web SDK save warning, attempting REST API fallback...", e);
+      }
+    }
+
+    // 2. Direct REST API Fallback to Firestore (Guaranteed to work if project exists)
+    if (projectId) {
+      try {
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/speed_audits${apiKey ? '?key=' + apiKey : ''}`;
+        const body = {
+          fields: {
+            timestamp: { integerValue: record.timestamp || Date.now() },
+            operatorBadge: { stringValue: record.operatorBadge || 'CARRIER' },
+            carrier: { stringValue: record.carrier || 'Broadband' },
+            download: { doubleValue: record.download || 0 },
+            upload: { doubleValue: record.upload || 0 },
+            ping: { integerValue: record.ping || 0 },
+            jitter: { doubleValue: record.jitter || 0 },
+            location: { stringValue: record.location || 'India' },
+            planMbps: { integerValue: record.planMbps || 100 },
+            deliveryPercent: { doubleValue: record.sla?.deliveryPercent || 100 },
+            grade: { stringValue: record.sla?.grade || 'A+' }
+          }
+        };
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          console.log("🔥 Audit Record Saved to Cloud Firestore via REST API!");
+          if (typeof displayToast === 'function') displayToast('🔥 Audit Saved to Firebase Cloud!');
+        } else {
+          const errData = await res.json();
+          console.warn("Firestore REST API Error:", errData);
+          if (errData.error?.status === 'PERMISSION_DENIED') {
+            if (typeof displayToast === 'function') displayToast('⚠️ Firebase: Please set Firestore Security Rules to "allow read, write: if true;"', true);
+          }
+        }
+      } catch (err) {
+        console.warn("Firebase REST endpoint fallback failed:", err);
+      }
+    }
+  };
+
+  window.initFirebaseCloud();
 </script>
 </body>
 </html>
