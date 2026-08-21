@@ -1765,9 +1765,9 @@ table.data-table tr:hover td {
           <!-- Cyber Laser Needle Assembly -->
           <g id="needleAssembly" transform="rotate(-135 180 180)">
             <!-- Needle Glow Blade -->
-            <polygon points="176,180 184,180 181,42 179,42" fill="url(#needleGradient)" filter="url(#glowFilter)" />
+            <polygon points="176.5,180 183.5,180 181,58 179,58" fill="url(#needleGradient)" filter="url(#glowFilter)" />
             <!-- Needle Sharp White Tip -->
-            <line x1="180" y1="180" x2="180" y2="40" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="180" y1="180" x2="180" y2="56" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
             <!-- Center Titanium Pivot Hub -->
             <circle cx="180" cy="180" r="14" fill="url(#hubGradient)" stroke="#00f0ff" stroke-width="2" />
             <circle cx="180" cy="180" r="4.5" fill="#ffffff" />
@@ -2385,12 +2385,12 @@ const vuUlSegments = [];
 })();
 
 function updateSpeedGauge(speed, peak, phaseLabel, unit) {
-  const p = speedToArcProgress(speed);
+  const p = Math.max(0, Math.min(1.0, speedToArcProgress(speed)));
   
   // 1. Update Circular SVG Progress Arc
   gaugeProgressArc.style.strokeDashoffset = GAUGE_DASH_TOTAL - (p * GAUGE_DASH_TOTAL);
   
-  // 2. Update Cyber Laser Needle (Sweeps from -135deg to +135deg)
+  // 2. Update Cyber Laser Needle (Sweeps from -135deg to +135deg, strictly bounded)
   const needleAngle = -135 + (p * 270);
   if (needleAssembly) {
     needleAssembly.setAttribute('transform', `rotate(${needleAngle} 180 180)`);
@@ -2996,7 +2996,7 @@ function cleanEnglishText(text) {
 }
 
 // Precise GPS Location Handler using Browser HTML5 Geolocation API (Strict English Output)
-async function requestExactGpsLocation(isAuto = false) {
+async function requestExactGpsLocation(isAuto = false, onSuccess = null) {
   if (!navigator.geolocation) {
     if (!isAuto) displayToast('GPS Geolocation is not supported by your browser.', true);
     return;
@@ -3008,6 +3008,7 @@ async function requestExactGpsLocation(isAuto = false) {
     heroLocation.innerHTML = `<strong>📍 Exact GPS:</strong> ${cleanGps}`;
     btnGpsLoc.classList.add('verified');
     gpsBtnTxt.textContent = 'GPS Active';
+    if (typeof onSuccess === 'function') onSuccess();
   } else {
     gpsBtnTxt.textContent = 'Locating...';
     if (!isAuto) displayToast('Requesting GPS device location permission...');
@@ -3040,6 +3041,7 @@ async function requestExactGpsLocation(isAuto = false) {
           gpsBtnTxt.textContent = 'GPS Verified';
           localStorage.setItem('speedpulse_gps_location', fullAddress);
           displayToast(`GPS Location Pinpointed: ${city || locality}, ${state}`);
+          if (typeof onSuccess === 'function') onSuccess();
           return;
         }
       } catch (e) {
@@ -3062,12 +3064,14 @@ async function requestExactGpsLocation(isAuto = false) {
           gpsBtnTxt.textContent = 'GPS Verified';
           localStorage.setItem('speedpulse_gps_location', fullAddress);
           displayToast(`GPS Location Pinpointed: ${city}, ${state}`);
+          if (typeof onSuccess === 'function') onSuccess();
           return;
         }
       } catch (_) {}
 
       heroLocation.textContent = `📍 Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)} (±${accuracy}m)`;
       gpsBtnTxt.textContent = 'GPS Active';
+      if (typeof onSuccess === 'function') onSuccess();
     },
     (err) => {
       console.warn('Geolocation permission status:', err.message);
@@ -3119,6 +3123,15 @@ btnMasterStart.addEventListener('click', () => {
     activeAbortController?.abort();
     resetUIToReady('Test Cancelled by User');
   } else {
+    const savedGps = localStorage.getItem('speedpulse_gps_location');
+    const isVerified = btnGpsLoc.classList.contains('verified');
+
+    if (!savedGps && !isVerified) {
+      showModal('locationPromptModal');
+      displayToast('📍 Location permission required to run 100% precision audit.', true);
+      return;
+    }
+
     beginSpeedAudit();
   }
 });
@@ -3542,7 +3555,11 @@ document.querySelectorAll('.close-modal-btn').forEach(btn => {
 
 document.getElementById('btnAllowLocationNow').onclick = () => {
   hideModal('locationPromptModal');
-  requestExactGpsLocation(false);
+  requestExactGpsLocation(false, () => {
+    if (!isTestActive) {
+      beginSpeedAudit();
+    }
+  });
 };
 
 document.getElementById('btnSkipLocationPrompt').onclick = () => {
